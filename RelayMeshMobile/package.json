@@ -20,6 +20,7 @@
     "@babel/core": "^7.25.2",
     "@expo/metro-config": "~54.0.14",
     "@types/react": "~19.1.10",
+    "babel-preset-expo": "~54.0.0",
     "metro": "^0.83.1",
     "typescript": "^5.3.3"
   }

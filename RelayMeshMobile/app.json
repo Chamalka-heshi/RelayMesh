@@ -10,6 +10,17 @@
     },
     "android": {
       "package": "com.relaymeshmobile"
-    }
+    },
+    "plugins": [
+      [
+        "@config-plugins/react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Allow RelayMesh to connect to offline peers.",
+          "bluetoothPeripheralPermission": "Allow RelayMesh to broadcast to offline peers."
+        }
+      ]
+    ]
   }
 }

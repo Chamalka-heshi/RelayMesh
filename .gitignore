@@ -1,0 +1,19 @@
+# Node & React
+node_modules/
+build/
+.pnp
+.pnp.js
+
+# React Native & Android/iOS
+mobile-app/android/app/build/
+mobile-app/android/.gradle/
+mobile-app/ios/Pods/
+mobile-app/ios/build/
+
+# Go
+backend/bin/
+backend/*.exe
+
+# Environment variables
+.env
+.DS_Store

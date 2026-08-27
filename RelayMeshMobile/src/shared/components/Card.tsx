@@ -5,28 +5,34 @@ import { Colors } from '../theme/colors';
 interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  variant?: 'surface' | 'elevated' | 'danger';
+  variant?: 'default' | 'accentGreen' | 'emergencyRed' | 'outline';
 }
 
 export const Card: React.FC<CardProps> = ({
   children,
   style,
-  variant = 'surface',
+  variant = 'default',
 }) => {
   const getBackgroundColor = () => {
     switch (variant) {
-      case 'elevated':
-        return Colors.surfaceLight;
-      case 'danger':
-        return 'rgba(220, 38, 38, 0.15)';
+      case 'accentGreen':
+        return Colors.accentGreen;
+      case 'emergencyRed':
+        return Colors.sosRedLight;
       default:
         return Colors.surface;
     }
   };
 
   const getBorderColor = () => {
-    if (variant === 'danger') return Colors.sosRed;
-    return Colors.border;
+    switch (variant) {
+      case 'accentGreen':
+        return Colors.accentGreenBorder;
+      case 'emergencyRed':
+        return Colors.sosRedBorder;
+      default:
+        return Colors.borderLight;
+    }
   };
 
   return (
@@ -49,12 +55,12 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     padding: 16,
-    marginVertical: 8,
+    marginVertical: 6,
     borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
 });

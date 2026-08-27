@@ -8,165 +8,351 @@ import {
   View,
   ScrollView,
 } from 'react-native';
-import { Colors, Typography } from './src/shared';
+import { Colors, Typography, BottomNav, TabName } from './src/shared';
 
-// Import Screen Components from Modules
-import { Screen01_SOSMain } from './src/modules/sos';
-import { Screen05_OfflineMap } from './src/modules/map';
-import { Screen10_ChatList } from './src/modules/messaging';
-import { Screen16_MeshTopology } from './src/modules/mesh';
-import { Screen02_ResourceDirectory } from './src/modules/resources';
+// Member 1: SOS Screens
+import {
+  Screen01_SOSMain,
+  Screen07_SOSAlert,
+  Screen08_SOSTracking,
+  Screen09_SOSHistory,
+} from './src/modules/sos';
 
-type ModuleType = 'sos' | 'map' | 'messaging' | 'mesh' | 'resources';
+// Member 2: Map Screens
+import {
+  Screen05_OfflineMap,
+  Screen06_NodeLocator,
+  Screen15_RouteNavigation,
+} from './src/modules/map';
+
+// Member 3: Messaging Screens
+import {
+  Screen10_ChatList,
+  Screen11_DirectChat,
+  Screen12_BroadcastMessage,
+} from './src/modules/messaging';
+
+// Member 4: Mesh Screens
+import {
+  Screen16_MeshTopology,
+  Screen17_NodeDiscovery,
+  Screen18_NetworkDiagnostics,
+  Screen19_RelaySettings,
+} from './src/modules/mesh';
+
+// Member 5: Resources, Home, Auth & Settings
+import {
+  Screen00_Splash,
+  Screen01_Onboarding,
+  Screen02_ResourceDirectory,
+  Screen03_ResourceDetails,
+  Screen04_HomeDashboard,
+  Screen20_AppSettings,
+  Screen23_UserProfile,
+  Screen24_Login,
+  Screen25_Register,
+} from './src/modules/resources';
+
+type ScreenId =
+  | 'splash'
+  | 'onboarding'
+  | 'login'
+  | 'register'
+  | 'home'
+  | 'map'
+  | 'mapFilter'
+  | 'routeNav'
+  | 'sos'
+  | 'sosAlert'
+  | 'sosTracking'
+  | 'sosHistory'
+  | 'messages'
+  | 'directChat'
+  | 'broadcast'
+  | 'mesh'
+  | 'nearby'
+  | 'storeForward'
+  | 'relayConfig'
+  | 'resources'
+  | 'resourceDetail'
+  | 'settings'
+  | 'profile';
 
 export default function App() {
-  const [activeModule, setActiveModule] = useState<ModuleType>('sos');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
+  const [activeTab, setActiveTab] = useState<TabName>('home');
+  const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
+  const [showScreenPicker, setShowScreenPicker] = useState(false);
 
-  const renderActiveScreen = () => {
-    switch (activeModule) {
-      case 'sos':
-        return <Screen01_SOSMain />;
+  // Tab switcher
+  const handleTabPress = (tab: TabName) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case 'home':
+        setActiveScreen('home');
+        break;
       case 'map':
-        return <Screen05_OfflineMap />;
-      case 'messaging':
-        return <Screen10_ChatList />;
-      case 'mesh':
-        return <Screen16_MeshTopology />;
+        setActiveScreen('map');
+        break;
+      case 'messages':
+        setActiveScreen('messages');
+        break;
       case 'resources':
-        return <Screen02_ResourceDirectory />;
-      default:
-        return <Screen01_SOSMain />;
+        setActiveScreen('resources');
+        break;
     }
   };
 
+  const handleSOSPress = () => {
+    setActiveScreen('sos');
+  };
+
+  // Render current active screen
+  const renderScreen = () => {
+    switch (activeScreen) {
+      // Member 5: Auth & Home
+      case 'splash':
+        return <Screen00_Splash onFinish={() => setActiveScreen('onboarding')} />;
+      case 'onboarding':
+        return <Screen01_Onboarding onComplete={() => setActiveScreen('home')} />;
+      case 'login':
+        return (
+          <Screen24_Login
+            onLoginSuccess={() => setActiveScreen('home')}
+            onNavigateRegister={() => setActiveScreen('register')}
+          />
+        );
+      case 'register':
+        return (
+          <Screen25_Register
+            onRegisterSuccess={() => setActiveScreen('home')}
+            onNavigateLogin={() => setActiveScreen('login')}
+          />
+        );
+      case 'home':
+        return (
+          <Screen04_HomeDashboard
+            onNavigate={(dest) => {
+              if (dest === 'map') setActiveScreen('map');
+              else if (dest === 'messages') setActiveScreen('messages');
+              else if (dest === 'resources') setActiveScreen('resources');
+              else if (dest === 'mesh') setActiveScreen('mesh');
+              else if (dest === 'settings') setActiveScreen('settings');
+              else if (dest === 'profile') setActiveScreen('profile');
+            }}
+            onSOSPress={handleSOSPress}
+          />
+        );
+
+      // Member 1: SOS
+      case 'sos':
+        return (
+          <Screen01_SOSMain
+            onSOSSent={() => setActiveScreen('sosAlert')}
+            onCancel={() => setActiveScreen('home')}
+          />
+        );
+      case 'sosAlert':
+        return (
+          <Screen07_SOSAlert
+            onViewMap={() => setActiveScreen('map')}
+            onCancelSOS={() => setActiveScreen('home')}
+          />
+        );
+      case 'sosTracking':
+        return <Screen08_SOSTracking />;
+      case 'sosHistory':
+        return <Screen09_SOSHistory />;
+
+      // Member 2: Map
+      case 'map':
+        return (
+          <Screen05_OfflineMap
+            onSelectResource={(res) => setActiveScreen('resourceDetail')}
+            onFilterPress={() => setActiveScreen('mapFilter')}
+          />
+        );
+      case 'mapFilter':
+        return (
+          <Screen06_NodeLocator
+            onApply={() => setActiveScreen('map')}
+            onReset={() => setActiveScreen('map')}
+          />
+        );
+      case 'routeNav':
+        return <Screen15_RouteNavigation />;
+
+      // Member 3: Messaging
+      case 'messages':
+        return (
+          <Screen10_ChatList
+            onSelectChat={(name) => {
+              setSelectedChat(name);
+              setActiveScreen('directChat');
+            }}
+            onNewMessage={() => setActiveScreen('broadcast')}
+          />
+        );
+      case 'directChat':
+        return (
+          <Screen11_DirectChat
+            chatName={selectedChat}
+            onBackPress={() => setActiveScreen('messages')}
+          />
+        );
+      case 'broadcast':
+        return <Screen12_BroadcastMessage />;
+
+      // Member 4: Mesh
+      case 'mesh':
+        return <Screen16_MeshTopology />;
+      case 'nearby':
+        return <Screen17_NodeDiscovery />;
+      case 'storeForward':
+        return <Screen18_NetworkDiagnostics />;
+      case 'relayConfig':
+        return <Screen19_RelaySettings />;
+
+      // Member 5: Resources & Profile
+      case 'resources':
+        return (
+          <Screen02_ResourceDirectory
+            onSelectResource={() => setActiveScreen('resourceDetail')}
+          />
+        );
+      case 'resourceDetail':
+        return (
+          <Screen03_ResourceDetails
+            onBackPress={() => setActiveScreen('resources')}
+          />
+        );
+      case 'settings':
+        return (
+          <Screen20_AppSettings
+            onNavigateProfile={() => setActiveScreen('profile')}
+            onLogout={() => setActiveScreen('login')}
+          />
+        );
+      case 'profile':
+        return (
+          <Screen23_UserProfile
+            onBackPress={() => setActiveScreen('settings')}
+          />
+        );
+
+      default:
+        return (
+          <Screen04_HomeDashboard
+            onNavigate={() => {}}
+            onSOSPress={handleSOSPress}
+          />
+        );
+    }
+  };
+
+  // Hide BottomNav on full-screen flows (Splash, Onboarding, Login, Register, Direct Chat)
+  const isFullScreen =
+    activeScreen === 'splash' ||
+    activeScreen === 'onboarding' ||
+    activeScreen === 'login' ||
+    activeScreen === 'register' ||
+    activeScreen === 'directChat';
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-      {/* Top App Header */}
-      <View style={styles.topHeader}>
-        <Text style={[Typography.h3, { color: Colors.textPrimary }]}>
-          📡 RelayMesh Mobile
-        </Text>
-        <View style={styles.onlineBadge}>
-          <Text style={styles.onlineBadgeText}>P2P MESH READY</Text>
-        </View>
-      </View>
-
-      {/* Module Selector Tabs */}
-      <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
-          <TabButton
-            label="🚨 SOS (M1)"
-            active={activeModule === 'sos'}
-            onPress={() => setActiveModule('sos')}
-          />
-          <TabButton
-            label="🗺️ Map (M2)"
-            active={activeModule === 'map'}
-            onPress={() => setActiveModule('map')}
-          />
-          <TabButton
-            label="💬 Chat (M3)"
-            active={activeModule === 'messaging'}
-            onPress={() => setActiveModule('messaging')}
-          />
-          <TabButton
-            label="🕸️ Mesh (M4)"
-            active={activeModule === 'mesh'}
-            onPress={() => setActiveModule('mesh')}
-          />
-          <TabButton
-            label="📦 Relief (M5)"
-            active={activeModule === 'resources'}
-            onPress={() => setActiveModule('resources')}
-          />
+      {/* Top Figma Screen Showcase Switcher Bar */}
+      <View style={styles.showcaseBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.showcaseScroll}>
+          <Text style={styles.showcaseLabel}>FIGMA SCREENS:</Text>
+          <ScreenPill title="Splash" active={activeScreen === 'splash'} onPress={() => setActiveScreen('splash')} />
+          <ScreenPill title="Onboard" active={activeScreen === 'onboarding'} onPress={() => setActiveScreen('onboarding')} />
+          <ScreenPill title="Login" active={activeScreen === 'login'} onPress={() => setActiveScreen('login')} />
+          <ScreenPill title="Register" active={activeScreen === 'register'} onPress={() => setActiveScreen('register')} />
+          <ScreenPill title="Home" active={activeScreen === 'home'} onPress={() => { setActiveTab('home'); setActiveScreen('home'); }} />
+          <ScreenPill title="Map" active={activeScreen === 'map'} onPress={() => { setActiveTab('map'); setActiveScreen('map'); }} />
+          <ScreenPill title="SOS" active={activeScreen === 'sos'} onPress={() => setActiveScreen('sos')} />
+          <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
+          <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
+          <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
+          <ScreenPill title="Resources" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
+          <ScreenPill title="Mesh" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
+          <ScreenPill title="Settings" active={activeScreen === 'settings'} onPress={() => setActiveScreen('settings')} />
+          <ScreenPill title="Profile" active={activeScreen === 'profile'} onPress={() => setActiveScreen('profile')} />
         </ScrollView>
       </View>
 
-      {/* Active Screen Area */}
-      <View style={styles.screenContainer}>{renderActiveScreen()}</View>
+      {/* Active Screen View */}
+      <View style={styles.screenContainer}>{renderScreen()}</View>
+
+      {/* Persistent Bottom Navigation with Center Floating SOS Button */}
+      {!isFullScreen && (
+        <BottomNav
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onSOSPress={handleSOSPress}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
-interface TabButtonProps {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}
-
-const TabButton: React.FC<TabButtonProps> = ({ label, active, onPress }) => (
+const ScreenPill: React.FC<{ title: string; active: boolean; onPress: () => void }> = ({
+  title,
+  active,
+  onPress,
+}) => (
   <TouchableOpacity
-    style={[styles.tabButton, active && styles.tabButtonActive]}
+    style={[styles.pill, active && styles.pillActive]}
     onPress={onPress}
     activeOpacity={0.7}
   >
-    <Text style={[styles.tabButtonText, active && styles.tabButtonTextActive]}>
-      {label}
-    </Text>
+    <Text style={[styles.pillText, active && styles.pillTextActive]}>{title}</Text>
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  topHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  showcaseBar: {
+    backgroundColor: '#0F172A',
+    paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#1E293B',
   },
-  onlineBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderColor: Colors.success,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  onlineBadgeText: {
-    color: Colors.success,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  tabsContainer: {
-    backgroundColor: Colors.surface,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  tabsScroll: {
+  showcaseScroll: {
     paddingHorizontal: 12,
-    gap: 8,
+    alignItems: 'center',
+    gap: 6,
   },
-  tabButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  showcaseLabel: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '800',
+    marginRight: 4,
   },
-  tabButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primaryLight,
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
   },
-  tabButtonText: {
-    color: Colors.textSecondary,
-    fontSize: 13,
+  pillActive: {
+    backgroundColor: Colors.primaryLight,
+  },
+  pillText: {
+    color: '#94A3B8',
+    fontSize: 11,
     fontWeight: '600',
   },
-  tabButtonTextActive: {
-    color: Colors.textPrimary,
+  pillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   screenContainer: {
     flex: 1,
   },
 });
-

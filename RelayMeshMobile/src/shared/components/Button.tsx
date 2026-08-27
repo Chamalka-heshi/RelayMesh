@@ -13,11 +13,12 @@ import { Typography } from '../theme/typography';
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline';
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  icon?: React.ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -30,13 +31,14 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
 }) => {
   const getBackgroundColor = () => {
-    if (disabled) return Colors.surfaceLight;
+    if (disabled) return '#CBD5E1';
     switch (variant) {
       case 'secondary':
-        return Colors.secondary;
+        return Colors.accentGreen;
       case 'danger':
         return Colors.sosRed;
       case 'outline':
+      case 'ghost':
         return 'transparent';
       default:
         return Colors.primary;
@@ -44,9 +46,19 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextColor = () => {
-    if (disabled) return Colors.textMuted;
-    if (variant === 'outline') return Colors.primaryLight;
-    return Colors.textPrimary;
+    if (disabled) return '#94A3B8';
+    switch (variant) {
+      case 'secondary':
+        return Colors.primary;
+      case 'danger':
+        return '#FFFFFF';
+      case 'outline':
+        return Colors.primary;
+      case 'ghost':
+        return Colors.textSecondary;
+      default:
+        return '#FFFFFF';
+    }
   };
 
   return (
@@ -55,14 +67,14 @@ export const Button: React.FC<ButtonProps> = ({
         styles.button,
         {
           backgroundColor: getBackgroundColor(),
-          borderColor: variant === 'outline' ? Colors.primaryLight : 'transparent',
+          borderColor: variant === 'outline' ? Colors.primary : 'transparent',
           borderWidth: variant === 'outline' ? 1.5 : 0,
         },
         style,
       ]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
       {loading ? (
         <ActivityIndicator color={getTextColor()} size="small" />
@@ -85,6 +97,6 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   text: {
-    letterSpacing: 0.5,
+    textAlign: 'center',
   },
 });

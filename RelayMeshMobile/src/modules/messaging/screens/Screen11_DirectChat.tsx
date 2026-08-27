@@ -14,7 +14,8 @@ import { Q } from '@nozbe/watermelondb';
 import { Card, Colors, Typography } from '../../../shared';
 import { database } from '../../../database';
 import Message from '../../../database/Message';
-import { encryptMessage, decryptMessage, generateKeyPair } from '../utils/crypto';
+import { meshRouter } from '../services/MeshRouter';
+import { generateKeyPair, encryptMessage, decryptMessage } from '../utils/crypto';
 
 // TEMPORARY: Generating dummy keys for testing the UI encryption flow
 const TEMP_MY_KEYS = generateKeyPair();
@@ -41,22 +42,37 @@ const RawScreen11_DirectChat: React.FC<Props> = ({
 
     setInputText('');
 
-    // 1. Encrypt the payload before saving it to the database
+    // 1. Encrypt the payload locally
     const securePayload = encryptMessage(
       trimmedText,
       TEMP_MY_KEYS.privateKey,
       TEMP_THEIR_KEYS.publicKey
     );
 
-    // 2. Write the unreadable ciphertext to WatermelonDB
+    // 2. Generate a unique ID for cycle detection in the mesh
+    const packetId = Date.now().toString() + '-' + Math.random().toString(36).substring(7);
+
+    // 3. Save to WatermelonDB instantly
     await database.write(async () => {
       await database.get<Message>('messages').create((msg) => {
+        msg._raw.id = packetId;
         msg.conversationId = conversationId;
         msg.senderId = 'Me';
         msg.encryptedPayload = securePayload;
         msg.status = 'queued';
         msg.hopCount = 0;
       });
+    });
+
+    // 4. Pass to the Mesh Router to broadcast to physical peers
+    meshRouter.processPacket({
+      id: packetId,
+      conversationId,
+      senderId: 'Me',
+      encryptedPayload: securePayload,
+      hopCount: 0,
+      maxHops: 5,
+      timestamp: Date.now(),
     });
   };
 

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,12 +14,17 @@ import { Q } from '@nozbe/watermelondb';
 import { Card, Colors, Typography } from '../../../shared';
 import { database } from '../../../database';
 import Message from '../../../database/Message';
+import { encryptMessage, decryptMessage, generateKeyPair } from '../utils/crypto';
+
+// TEMPORARY: Generating dummy keys for testing the UI encryption flow
+const TEMP_MY_KEYS = generateKeyPair();
+const TEMP_THEIR_KEYS = generateKeyPair();
 
 interface Props {
-  conversationId: string; // Used to fetch the right messages
+  conversationId: string;
   chatName?: string;
   onBackPress?: () => void;
-  messages: Message[]; // Injected automatically by WatermelonDB
+  messages: Message[];
 }
 
 const RawScreen11_DirectChat: React.FC<Props> = ({
@@ -34,16 +39,22 @@ const RawScreen11_DirectChat: React.FC<Props> = ({
     const trimmedText = inputText.trim();
     if (!trimmedText) return;
 
-    // 1. Clear input immediately for snappy UX
     setInputText('');
 
-    // 2. Write directly to WatermelonDB
+    // 1. Encrypt the payload before saving it to the database
+    const securePayload = encryptMessage(
+      trimmedText,
+      TEMP_MY_KEYS.privateKey,
+      TEMP_THEIR_KEYS.publicKey
+    );
+
+    // 2. Write the unreadable ciphertext to WatermelonDB
     await database.write(async () => {
       await database.get<Message>('messages').create((msg) => {
         msg.conversationId = conversationId;
-        msg.senderId = 'Me'; // Replace with actual Node ID later
-        msg.encryptedPayload = trimmedText; // We will pass this through AES-GCM later!
-        msg.status = 'queued'; // Go backend will pick this up
+        msg.senderId = 'Me';
+        msg.encryptedPayload = securePayload;
+        msg.status = 'queued';
         msg.hopCount = 0;
       });
     });
@@ -86,6 +97,14 @@ const RawScreen11_DirectChat: React.FC<Props> = ({
       <ScrollView contentContainerStyle={styles.chatScroll}>
         {messages.map((m) => {
           const isMe = m.senderId === 'Me';
+
+          // 3. Decrypt the payload on the fly for the UI
+          const decryptedText = isMe
+            ? decryptMessage(m.encryptedPayload, TEMP_THEIR_KEYS.privateKey, TEMP_MY_KEYS.publicKey)
+            : decryptMessage(m.encryptedPayload, TEMP_MY_KEYS.privateKey, TEMP_THEIR_KEYS.publicKey);
+
+          const displayText = decryptedText || '🔒 [Decryption Failed - Key Mismatch]';
+
           return (
             <View
               key={m.id}
@@ -106,7 +125,7 @@ const RawScreen11_DirectChat: React.FC<Props> = ({
                     isMe ? styles.myBubbleText : styles.theirBubbleText,
                   ]}
                 >
-                  {m.encryptedPayload} {/* Decrypt this in the UI layer later */}
+                  {displayText}
                 </Text>
                 <View style={styles.msgFooter}>
                   <Text style={isMe ? styles.myTime : styles.theirTime}>
@@ -155,8 +174,6 @@ const RawScreen11_DirectChat: React.FC<Props> = ({
   );
 };
 
-// --- WATERMELONDB SUBSCRIPTION ---
-// Pulls all messages for this specific conversation and sorts them by creation time.
 const enhance = withObservables(['conversationId'], ({ conversationId }) => ({
   messages: database.collections
     .get<Message>('messages')

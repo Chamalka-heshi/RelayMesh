@@ -1,45 +1,358 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React, { useState } from 'react';
 import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+} from 'react-native';
+import { Colors, Typography, BottomNav, TabName } from './src/shared';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+// Member 1: SOS Screens
+import {
+  Screen01_SOSMain,
+  Screen07_SOSAlert,
+  Screen08_SOSTracking,
+  Screen09_SOSHistory,
+} from './src/modules/sos';
+
+// Member 2: Map Screens
+import {
+  Screen05_OfflineMap,
+  Screen06_NodeLocator,
+  Screen15_RouteNavigation,
+} from './src/modules/map';
+
+// Member 3: Messaging Screens
+import {
+  Screen10_ChatList,
+  Screen11_DirectChat,
+  Screen12_BroadcastMessage,
+} from './src/modules/messaging';
+
+// Member 4: Mesh Screens
+import {
+  Screen16_MeshTopology,
+  Screen17_NodeDiscovery,
+  Screen18_NetworkDiagnostics,
+  Screen19_RelaySettings,
+} from './src/modules/mesh';
+
+// Member 5: Resources, Home, Auth & Settings
+import {
+  Screen00_Splash,
+  Screen01_Onboarding,
+  Screen02_ResourceDirectory,
+  Screen03_ResourceDetails,
+  Screen04_HomeDashboard,
+  Screen20_AppSettings,
+  Screen23_UserProfile,
+  Screen24_Login,
+  Screen25_Register,
+} from './src/modules/resources';
+
+type ScreenId =
+  | 'splash'
+  | 'onboarding'
+  | 'login'
+  | 'register'
+  | 'home'
+  | 'map'
+  | 'mapFilter'
+  | 'routeNav'
+  | 'sos'
+  | 'sosAlert'
+  | 'sosTracking'
+  | 'sosHistory'
+  | 'messages'
+  | 'directChat'
+  | 'broadcast'
+  | 'mesh'
+  | 'nearby'
+  | 'storeForward'
+  | 'relayConfig'
+  | 'resources'
+  | 'resourceDetail'
+  | 'settings'
+  | 'profile';
+
+export default function App() {
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
+  const [activeTab, setActiveTab] = useState<TabName>('home');
+  const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
+  const [showScreenPicker, setShowScreenPicker] = useState(false);
+
+  // Tab switcher
+  const handleTabPress = (tab: TabName) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case 'home':
+        setActiveScreen('home');
+        break;
+      case 'map':
+        setActiveScreen('map');
+        break;
+      case 'messages':
+        setActiveScreen('messages');
+        break;
+      case 'resources':
+        setActiveScreen('resources');
+        break;
+    }
+  };
+
+  const handleSOSPress = () => {
+    setActiveScreen('sos');
+  };
+
+  // Render current active screen
+  const renderScreen = () => {
+    switch (activeScreen) {
+      // Member 5: Auth & Home
+      case 'splash':
+        return <Screen00_Splash onFinish={() => setActiveScreen('onboarding')} />;
+      case 'onboarding':
+        return <Screen01_Onboarding onComplete={() => setActiveScreen('home')} />;
+      case 'login':
+        return (
+          <Screen24_Login
+            onLoginSuccess={() => setActiveScreen('home')}
+            onNavigateRegister={() => setActiveScreen('register')}
+          />
+        );
+      case 'register':
+        return (
+          <Screen25_Register
+            onRegisterSuccess={() => setActiveScreen('home')}
+            onNavigateLogin={() => setActiveScreen('login')}
+          />
+        );
+      case 'home':
+        return (
+          <Screen04_HomeDashboard
+            onNavigate={(dest) => {
+              if (dest === 'map') setActiveScreen('map');
+              else if (dest === 'messages') setActiveScreen('messages');
+              else if (dest === 'resources') setActiveScreen('resources');
+              else if (dest === 'mesh') setActiveScreen('mesh');
+              else if (dest === 'settings') setActiveScreen('settings');
+              else if (dest === 'profile') setActiveScreen('profile');
+            }}
+            onSOSPress={handleSOSPress}
+          />
+        );
+
+      // Member 1: SOS
+      case 'sos':
+        return (
+          <Screen01_SOSMain
+            onSOSSent={() => setActiveScreen('sosAlert')}
+            onCancel={() => setActiveScreen('home')}
+          />
+        );
+      case 'sosAlert':
+        return (
+          <Screen07_SOSAlert
+            onViewMap={() => setActiveScreen('map')}
+            onCancelSOS={() => setActiveScreen('home')}
+          />
+        );
+      case 'sosTracking':
+        return <Screen08_SOSTracking />;
+      case 'sosHistory':
+        return <Screen09_SOSHistory />;
+
+      // Member 2: Map
+      case 'map':
+        return (
+          <Screen05_OfflineMap
+            onSelectResource={(res) => setActiveScreen('resourceDetail')}
+            onFilterPress={() => setActiveScreen('mapFilter')}
+          />
+        );
+      case 'mapFilter':
+        return (
+          <Screen06_NodeLocator
+            onApply={() => setActiveScreen('map')}
+            onReset={() => setActiveScreen('map')}
+          />
+        );
+      case 'routeNav':
+        return <Screen15_RouteNavigation />;
+
+      // Member 3: Messaging
+      case 'messages':
+        return (
+          <Screen10_ChatList
+            onSelectChat={(name) => {
+              setSelectedChat(name);
+              setActiveScreen('directChat');
+            }}
+            onNewMessage={() => setActiveScreen('broadcast')}
+          />
+        );
+      case 'directChat':
+        return (
+          <Screen11_DirectChat
+            chatName={selectedChat}
+            onBackPress={() => setActiveScreen('messages')}
+          />
+        );
+      case 'broadcast':
+        return <Screen12_BroadcastMessage />;
+
+      // Member 4: Mesh
+      case 'mesh':
+        return <Screen16_MeshTopology />;
+      case 'nearby':
+        return <Screen17_NodeDiscovery />;
+      case 'storeForward':
+        return <Screen18_NetworkDiagnostics />;
+      case 'relayConfig':
+        return <Screen19_RelaySettings />;
+
+      // Member 5: Resources & Profile
+      case 'resources':
+        return (
+          <Screen02_ResourceDirectory
+            onSelectResource={() => setActiveScreen('resourceDetail')}
+          />
+        );
+      case 'resourceDetail':
+        return (
+          <Screen03_ResourceDetails
+            onBackPress={() => setActiveScreen('resources')}
+          />
+        );
+      case 'settings':
+        return (
+          <Screen20_AppSettings
+            onNavigateProfile={() => setActiveScreen('profile')}
+            onLogout={() => setActiveScreen('login')}
+          />
+        );
+      case 'profile':
+        return (
+          <Screen23_UserProfile
+            onBackPress={() => setActiveScreen('settings')}
+          />
+        );
+
+      default:
+        return (
+          <Screen04_HomeDashboard
+            onNavigate={() => {}}
+            onSOSPress={handleSOSPress}
+          />
+        );
+    }
+  };
+
+  // Hide BottomNav on full-screen flows (Splash, Onboarding, Login, Register, Direct Chat)
+  const isFullScreen =
+    activeScreen === 'splash' ||
+    activeScreen === 'onboarding' ||
+    activeScreen === 'login' ||
+    activeScreen === 'register' ||
+    activeScreen === 'directChat';
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* Top Figma Screen Showcase Switcher Bar */}
+      <View style={styles.showcaseBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.showcaseScroll}>
+          <Text style={styles.showcaseLabel}>FIGMA SCREENS:</Text>
+          <ScreenPill title="Splash" active={activeScreen === 'splash'} onPress={() => setActiveScreen('splash')} />
+          <ScreenPill title="Onboard" active={activeScreen === 'onboarding'} onPress={() => setActiveScreen('onboarding')} />
+          <ScreenPill title="Login" active={activeScreen === 'login'} onPress={() => setActiveScreen('login')} />
+          <ScreenPill title="Register" active={activeScreen === 'register'} onPress={() => setActiveScreen('register')} />
+          <ScreenPill title="Home" active={activeScreen === 'home'} onPress={() => { setActiveTab('home'); setActiveScreen('home'); }} />
+          <ScreenPill title="Map" active={activeScreen === 'map'} onPress={() => { setActiveTab('map'); setActiveScreen('map'); }} />
+          <ScreenPill title="SOS" active={activeScreen === 'sos'} onPress={() => setActiveScreen('sos')} />
+          <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
+          <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
+          <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
+          <ScreenPill title="Resources" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
+          <ScreenPill title="Mesh" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
+          <ScreenPill title="Settings" active={activeScreen === 'settings'} onPress={() => setActiveScreen('settings')} />
+          <ScreenPill title="Profile" active={activeScreen === 'profile'} onPress={() => setActiveScreen('profile')} />
+        </ScrollView>
+      </View>
+
+      {/* Active Screen View */}
+      <View style={styles.screenContainer}>{renderScreen()}</View>
+
+      {/* Persistent Bottom Navigation with Center Floating SOS Button */}
+      {!isFullScreen && (
+        <BottomNav
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onSOSPress={handleSOSPress}
+        />
+      )}
+    </SafeAreaView>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
+const ScreenPill: React.FC<{ title: string; active: boolean; onPress: () => void }> = ({
+  title,
+  active,
+  onPress,
+}) => (
+  <TouchableOpacity
+    style={[styles.pill, active && styles.pillActive]}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
+    <Text style={[styles.pillText, active && styles.pillTextActive]}>{title}</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
+  },
+  showcaseBar: {
+    backgroundColor: '#0F172A',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E293B',
+  },
+  showcaseScroll: {
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 6,
+  },
+  showcaseLabel: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '800',
+    marginRight: 4,
+  },
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
+  },
+  pillActive: {
+    backgroundColor: Colors.primaryLight,
+  },
+  pillText: {
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  pillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  screenContainer: {
+    flex: 1,
   },
 });
-
-export default App;

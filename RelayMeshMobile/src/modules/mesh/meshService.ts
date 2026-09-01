@@ -52,7 +52,11 @@ export const MeshService = {
   // --- PACKET QUEUE MANAGEMENT ---
   async getQueuedPackets(): Promise<StoredPacket[]> {
     try {
-      const data = await AsyncStorage.getItem(PACKETS_KEY);
+      // Checked both keys for backward compatibility
+      let data = await AsyncStorage.getItem(PACKETS_KEY);
+      if (!data) {
+        data = await AsyncStorage.getItem('@mesh_packet_queue');
+      }
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
@@ -63,40 +67,52 @@ export const MeshService = {
     const current = await this.getQueuedPackets();
     const updated = [packet, ...current];
     await AsyncStorage.setItem(PACKETS_KEY, JSON.stringify(updated));
+    await AsyncStorage.setItem('@mesh_packet_queue', JSON.stringify(updated));
     return updated;
   },
 
   async clearQueue(): Promise<void> {
     await AsyncStorage.removeItem(PACKETS_KEY);
+    await AsyncStorage.removeItem('@mesh_packet_queue');
   },
 
-  // --- SUPABASE CLOUD SYNC ---
+  // --- SUPABASE CLOUD SYNC (MEMBER 4) ---
   async syncQueueToCloud(): Promise<{ success: boolean; count: number }> {
     const packets = await this.getQueuedPackets();
-    if (packets.length === 0) return { success: true, count: 0 };
+    console.log('Packets retrieved for sync:', packets.length);
+
+    if (packets.length === 0) {
+      console.log('No pending packets in local queue to sync.');
+      return { success: true, count: 0 };
+    }
 
     try {
-      // Attempt upload to Supabase table "emergency_packets"
-      const { error } = await supabase.from('emergency_packets').insert(
-        packets.map((p) => ({
-          sender_node: p.sender,
-          payload: p.payload,
-          created_at: new Date().toISOString(),
-          status: 'synced_to_gateway',
-        }))
-      );
+      // 1. Format payload for Supabase database table
+      const payloadToUpload = packets.map((p) => ({
+        sender_node: p.sender,
+        payload: p.payload,
+        created_at: new Date().toISOString(),
+        status: 'synced_to_gateway',
+      }));
 
-      // If Supabase credentials are placeholder or network fails, fallback gracefully
+      // 2. Perform direct insertion to Supabase cloud table
+      const { error } = await supabase
+        .from('emergency_packets')
+        .insert(payloadToUpload);
+
       if (error) {
-        console.warn('Supabase sync skipped/failed, simulating gateway handoff:', error.message);
+        console.error('Supabase Ingestion Failed:', error.message);
+        return { success: false, count: 0 };
       }
 
+      console.log('Successfully inserted packets into Supabase cloud table!');
+
+      // 3. Clear local buffer only after confirmed cloud receipt
       await this.clearQueue();
       return { success: true, count: packets.length };
     } catch (e) {
-      console.warn('Supabase offline or unreachable. Clearing local buffer.');
-      await this.clearQueue();
-      return { success: true, count: packets.length };
+      console.error('Network exception during Supabase ingestion:', e);
+      return { success: false, count: 0 };
     }
   },
 };

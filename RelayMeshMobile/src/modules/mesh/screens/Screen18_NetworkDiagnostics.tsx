@@ -1,45 +1,56 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
+import { MeshService, StoredPacket } from '../meshService';
 
 export const Screen18_NetworkDiagnostics: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
-  const [queueCount, setQueueCount] = useState(14);
+  const [packets, setPackets] = useState<StoredPacket[]>([]);
   const [totalForwarded, setTotalForwarded] = useState(182);
-  const [lastSyncTime, setLastSyncTime] = useState('2 mins ago');
 
-  const handleForceSync = () => {
-    if (queueCount === 0) {
+  // Load persistent packet queue on mount
+  useEffect(() => {
+    loadQueue();
+  }, []);
+
+  const loadQueue = async () => {
+    const queue = await MeshService.getQueuedPackets();
+    setPackets(queue);
+  };
+
+  const handleSimulateNewPacket = async () => {
+    const newPacket: StoredPacket = {
+      id: `pkt_${Date.now()}`,
+      sender: `Node_${Math.floor(100 + Math.random() * 900)}`,
+      payload: 'SOS: Need medical supplies at Shelter #3',
+      timestamp: new Date().toLocaleTimeString(),
+      status: 'pending',
+    };
+
+    const updatedQueue = await MeshService.addPacketToQueue(newPacket);
+    setPackets(updatedQueue);
+  };
+
+  const handleForceSync = async () => {
+    if (packets.length === 0) {
       Alert.alert('Queue Empty', 'There are no pending offline packets to synchronize.');
       return;
     }
 
     setIsSyncing(true);
 
-    // Simulate network sync delay
-    setTimeout(() => {
-      setTotalForwarded((prev) => prev + queueCount);
-      setQueueCount(0);
-      setLastSyncTime('Just now');
+    setTimeout(async () => {
+      setTotalForwarded((prev) => prev + packets.length);
+      await MeshService.clearQueue();
+      setPackets([]);
       setIsSyncing(false);
-      Alert.alert('Sync Successful', 'All offline emergency packets were successfully delivered to the cloud gateway.');
+
+      Alert.alert(
+        'Sync Successful',
+        'All offline emergency packets were successfully delivered to the cloud gateway.'
+      );
     }, 2000);
   };
-
-  const handleSimulateNewPacket = () => {
-    setQueueCount((prev) => prev + 1);
-  };
-
-  const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Colors.background },
-    content: { padding: 16, paddingBottom: 40 },
-    metricsGrid: { flexDirection: 'row', gap: 12, marginVertical: 12 },
-    metricCard: { flex: 1, alignItems: 'center', padding: 16 },
-    metricValue: { fontSize: 28, fontWeight: '800', color: Colors.primary },
-    infoCard: { padding: 12, marginBottom: 16 },
-    infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-    loadingContainer: { alignItems: 'center', marginVertical: 12 },
-  });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -58,7 +69,7 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
       {/* Diagnostic Metrics Grid */}
       <View style={styles.metricsGrid}>
         <Card style={styles.metricCard}>
-          <Text style={styles.metricValue}>{queueCount}</Text>
+          <Text style={styles.metricValue}>{packets.length}</Text>
           <Text style={Typography.caption}>Pending Packets</Text>
         </Card>
         <Card style={styles.metricCard}>
@@ -67,19 +78,19 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
         </Card>
       </View>
 
-      <Card style={styles.infoCard}>
-        <View style={styles.infoRow}>
-          <Text style={Typography.caption}>Database Engine:</Text>
-          <Text style={Typography.bodyBold}>SQLite / WatermelonDB</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={Typography.caption}>Storage Limit:</Text>
-          <Text style={Typography.bodyBold}>50 MB / 500 MB</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={Typography.caption}>Last Cloud Sync:</Text>
-          <Text style={Typography.bodyBold}>{lastSyncTime}</Text>
-        </View>
+      {/* Packet Preview List */}
+      <Card style={{ marginBottom: 16 }}>
+        <Text style={[Typography.bodyBold, { marginBottom: 8 }]}>Recent Queued Payloads</Text>
+        {packets.length === 0 ? (
+          <Text style={Typography.caption}>No pending packets in buffer.</Text>
+        ) : (
+          packets.slice(0, 3).map((pkt) => (
+            <View key={pkt.id} style={styles.packetItem}>
+              <Text style={Typography.bodyBold}>{pkt.sender}</Text>
+              <Text style={Typography.caption}>{pkt.payload} • {pkt.timestamp}</Text>
+            </View>
+          ))
+        )}
       </Card>
 
       {isSyncing && (
@@ -108,3 +119,12 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
   );
 };
 
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.background },
+  content: { padding: 16, paddingBottom: 40 },
+  metricsGrid: { flexDirection: 'row', gap: 12, marginVertical: 12 },
+  metricCard: { flex: 1, alignItems: 'center', padding: 16 },
+  metricValue: { fontSize: 28, fontWeight: '800', color: Colors.primary },
+  packetItem: { paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  loadingContainer: { alignItems: 'center', marginVertical: 12 },
+});

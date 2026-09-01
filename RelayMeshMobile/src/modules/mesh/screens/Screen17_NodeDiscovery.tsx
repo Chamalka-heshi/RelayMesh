@@ -1,24 +1,48 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+﻿import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
 
 export const Screen17_NodeDiscovery: React.FC = () => {
-  const nearbyNodes = [
+  const [isScanning, setIsScanning] = useState(false);
+  const [nearbyNodes, setNearbyNodes] = useState([
     { id: '1', name: 'Rescue Team Alpha Unit', dist: '45 m away', role: 'Gateway Node', rssi: '-54 dBm', hops: 'Direct', type: 'rescue' },
     { id: '2', name: 'Volunteer Group Relay #02', dist: '80 m away', role: 'Relay Enabled', rssi: '-68 dBm', hops: 'Direct', type: 'volunteer' },
     { id: '3', name: 'Citizen Peer Device #448', dist: '120 m away', role: 'Relay Enabled', rssi: '-76 dBm', hops: '1 Hop', type: 'citizen' },
     { id: '4', name: 'Community Shelter Base', dist: '350 m away', role: 'Local Hub', rssi: '-82 dBm', hops: '2 Hops', type: 'shelter' },
-  ];
+  ]);
+
+  const handleScan = () => {
+    setIsScanning(true);
+    // Simulate BLE radio scan delay of 1.5 seconds
+    setTimeout(() => {
+      const newNodeId = (nearbyNodes.length + 1).toString();
+      const mockTypes = ['citizen', 'volunteer', 'rescue'];
+      const randomType = mockTypes[Math.floor(Math.random() * mockTypes.length)];
+      
+      const newNode = {
+        id: newNodeId,
+        name: `Discovered Peer #${Math.floor(100 + Math.random() * 900)}`,
+        dist: `${Math.floor(20 + Math.random() * 100)} m away`,
+        role: 'Relay Enabled',
+        rssi: `-${Math.floor(50 + Math.random() * 40)} dBm`,
+        hops: 'Direct',
+        type: randomType,
+      };
+
+      setNearbyNodes((prevNodes) => [newNode, ...prevNodes]);
+      setIsScanning(false);
+    }, 1500);
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
         title="Nearby Devices"
-        subtitle="12 peer nodes discovered via BLE & Wi-Fi Direct"
+        subtitle={`${nearbyNodes.length} peer nodes discovered via BLE & Wi-Fi Direct`}
       />
 
-      <Card variant="accentGreen">
-        <Text style={Typography.bodyBold}>Mesh Scanner Active</Text>
+      <Card style={{ backgroundColor: '#E6F4EA' }}>
+          <Text style={Typography.bodyBold}>Mesh Scanner Active</Text>
         <Text style={[Typography.caption, { marginTop: 2 }]}>
           Automatically discovering and pairing with nearby RelayMesh smartphones.
         </Text>
@@ -44,7 +68,14 @@ export const Screen17_NodeDiscovery: React.FC = () => {
         </Card>
       ))}
 
-      <Button title="SCAN FOR NEW PEER DEVICES" variant="primary" onPress={() => {}} />
+      {isScanning && <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 10 }} />}
+
+      <Button
+        title={isScanning ? "SCANNING BLE RADIOS..." : "SCAN FOR NEW PEER DEVICES"}
+        variant="primary"
+        onPress={handleScan}
+        disabled={isScanning}
+      />
     </ScrollView>
   );
 };

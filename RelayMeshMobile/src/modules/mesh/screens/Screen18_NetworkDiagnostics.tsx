@@ -32,26 +32,34 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
   };
 
   const handleForceSync = async () => {
-      if (packets.length === 0) {
-        Alert.alert('Queue Empty', 'There are no pending offline packets to synchronize.');
-        return;
-      }
+    // Check if packets array is empty
+    if (packets.length === 0) {
+      Alert.alert('Queue Empty', 'There are no pending offline packets to synchronize.');
+      return;
+    }
 
-      setIsSyncing(true);
+    setIsSyncing(true);
 
+    try {
       const result = await MeshService.syncQueueToCloud();
 
       if (result.success) {
         setTotalForwarded((prev) => prev + result.count);
         setPackets([]);
-        setIsSyncing(false);
-
+        
         Alert.alert(
           'Cloud Sync Successful',
           `${result.count} emergency packet(s) successfully pushed to Supabase Gateway!`
         );
       }
-    };
+    } catch (error) {
+      console.error('Sync error:', error);
+      Alert.alert('Sync Failed', 'Could not complete cloud synchronization.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header

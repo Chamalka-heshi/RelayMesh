@@ -277,7 +277,13 @@ export default function App() {
           <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
           <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
           <ScreenPill title="Resources" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
-          <ScreenPill title="Mesh" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
+          
+          {/* Member 4: Added buttons for Screens 16, 17, 18, 19 */}
+          <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
+          <ScreenPill title="Nearby Nodes (17)" active={activeScreen === 'nearby'} onPress={() => setActiveScreen('nearby')} />
+          <ScreenPill title="Store & Forward (18)" active={activeScreen === 'storeForward'} onPress={() => setActiveScreen('storeForward')} />
+          <ScreenPill title="Relay Config (19)" active={activeScreen === 'relayConfig'} onPress={() => setActiveScreen('relayConfig')} />
+
           <ScreenPill title="Settings" active={activeScreen === 'settings'} onPress={() => setActiveScreen('settings')} />
           <ScreenPill title="Profile" active={activeScreen === 'profile'} onPress={() => setActiveScreen('profile')} />
         </ScrollView>

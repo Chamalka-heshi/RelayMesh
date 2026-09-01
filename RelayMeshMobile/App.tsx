@@ -186,7 +186,7 @@ export default function App() {
       case 'messages':
         return (
           <Screen10_ChatList
-            onSelectChat={(name) => {
+            onSelectChat={(name: string) => {
               setSelectedChat(name);
               setActiveScreen('directChat');
             }}

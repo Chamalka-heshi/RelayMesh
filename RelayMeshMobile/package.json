@@ -5,24 +5,43 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "lint": "eslint .",
     "test": "jest"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@expo/metro-runtime": "~6.1.2",
+    "@nozbe/watermelondb": "^0.28.0",
+    "@nozbe/with-observables": "^1.6.0",
     "expo": "~54.0.37",
+    "expo-dev-client": "~6.0.21",
+    "lokijs": "^1.5.12",
     "react": "19.1.0",
+    "react-dom": "^19.1.0",
     "react-native": "0.81.5",
-    "react-native-safe-area-context": "~5.6.0"
+    "react-native-ble-plx": "^3.5.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-web": "^0.21.2",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/plugin-proposal-decorators": "^7.29.7",
+    "@babel/plugin-transform-class-properties": "^7.29.7",
+    "@config-plugins/react-native-ble-plx": "^7.0.0",
     "@expo/metro-config": "~54.0.14",
+    "@react-native/typescript-config": "^0.87.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
+    "@types/react-test-renderer": "^19.1.0",
     "babel-preset-expo": "~54.0.0",
+    "jest": "^30.5.0",
+    "jest-expo": "^57.0.5",
     "metro": "^0.83.1",
-    "typescript": "^5.3.3"
+    "react-test-renderer": "^19.1.0",
+    "typescript": "^5.9.3"
   }
 }

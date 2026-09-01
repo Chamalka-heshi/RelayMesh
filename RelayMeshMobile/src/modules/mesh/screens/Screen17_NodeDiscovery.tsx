@@ -1,48 +1,56 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
+import { MeshService, MeshNode } from '../meshService';
 
 export const Screen17_NodeDiscovery: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
-  const [nearbyNodes, setNearbyNodes] = useState([
-    { id: '1', name: 'Rescue Team Alpha Unit', dist: '45 m away', role: 'Gateway Node', rssi: '-54 dBm', hops: 'Direct', type: 'rescue' },
-    { id: '2', name: 'Volunteer Group Relay #02', dist: '80 m away', role: 'Relay Enabled', rssi: '-68 dBm', hops: 'Direct', type: 'volunteer' },
-    { id: '3', name: 'Citizen Peer Device #448', dist: '120 m away', role: 'Relay Enabled', rssi: '-76 dBm', hops: '1 Hop', type: 'citizen' },
-    { id: '4', name: 'Community Shelter Base', dist: '350 m away', role: 'Local Hub', rssi: '-82 dBm', hops: '2 Hops', type: 'shelter' },
-  ]);
+  const [nearbyNodes, setNearbyNodes] = useState<MeshNode[]>([]);
 
-  const handleScan = () => {
+  // Load stored nodes from MeshService on mount
+  useEffect(() => {
+    loadNodes();
+  }, []);
+
+  const loadNodes = async () => {
+    const nodes = await MeshService.getNearbyNodes();
+    setNearbyNodes(nodes);
+  };
+
+  const handleScan = async () => {
     setIsScanning(true);
-    // Simulate BLE radio scan delay of 1.5 seconds
-    setTimeout(() => {
-      const newNodeId = (nearbyNodes.length + 1).toString();
-      const mockTypes = ['citizen', 'volunteer', 'rescue'];
+    
+    // Simulate BLE discovery delay
+    setTimeout(async () => {
+      const mockTypes: ('citizen' | 'volunteer' | 'rescue')[] = ['citizen', 'volunteer', 'rescue'];
       const randomType = mockTypes[Math.floor(Math.random() * mockTypes.length)];
       
-      const newNode = {
-        id: newNodeId,
+      const newNode: MeshNode = {
+        id: Date.now().toString(),
         name: `Discovered Peer #${Math.floor(100 + Math.random() * 900)}`,
-        dist: `${Math.floor(20 + Math.random() * 100)} m away`,
+        dist: `${Math.floor(15 + Math.random() * 80)} m away`,
         role: 'Relay Enabled',
-        rssi: `-${Math.floor(50 + Math.random() * 40)} dBm`,
+        rssi: `-${Math.floor(45 + Math.random() * 40)} dBm`,
         hops: 'Direct',
         type: randomType,
       };
 
-      setNearbyNodes((prevNodes) => [newNode, ...prevNodes]);
+      // Save node through local service
+      const updatedList = await MeshService.addDiscoveredNode(newNode);
+      setNearbyNodes(updatedList);
       setIsScanning(false);
-    }, 1500);
+    }, 1200);
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
         title="Nearby Devices"
-        subtitle={`${nearbyNodes.length} peer nodes discovered via BLE & Wi-Fi Direct`}
+        subtitle={`${nearbyNodes.length} peer nodes active in mesh storage`}
       />
 
       <Card style={{ backgroundColor: '#E6F4EA' }}>
-          <Text style={Typography.bodyBold}>Mesh Scanner Active</Text>
+        <Text style={Typography.bodyBold}>Mesh Scanner Active</Text>
         <Text style={[Typography.caption, { marginTop: 2 }]}>
           Automatically discovering and pairing with nearby RelayMesh smartphones.
         </Text>

@@ -1,8 +1,23 @@
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import { mySchema } from './schema'; 
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import { mySchema } from './schema';
+import { migrations } from './migrations';
 
-export const dbAdapter = new SQLiteAdapter({
-  schema: mySchema, // Point to the correct variable name here
-  jsi: false, 
-  onSetUpError: (error) => console.error("WatermelonDB setup error:", error)
-});
+const createAdapter = () => {
+  if (process.env.NODE_ENV === 'test' || typeof jest !== 'undefined') {
+    return new LokiJSAdapter({
+      schema: mySchema,
+      migrations,
+      useWebWorker: false,
+      useIncrementalIndexedDB: false,
+    });
+  }
+  return new SQLiteAdapter({
+    schema: mySchema,
+    migrations,
+    jsi: false,
+    onSetUpError: (error: any) => console.error('WatermelonDB setup error:', error),
+  });
+};
+
+export const dbAdapter = createAdapter();

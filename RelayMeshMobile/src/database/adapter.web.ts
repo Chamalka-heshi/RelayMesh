@@ -1,8 +1,10 @@
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import { mySchema } from './schema';
+import { migrations } from './migrations';
 
 export const dbAdapter = new LokiJSAdapter({
-  schema: mySchema, // Point to the correct variable name here
+  schema: mySchema,
+  migrations,
   useWebWorker: false,
   useIncrementalIndexedDB: true,
 });

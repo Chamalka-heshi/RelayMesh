@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
 import {
   resourceService,
@@ -41,34 +42,35 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
     return () => unsubscribe();
   }, [activeCategory, searchQuery, onlyAvailable]);
 
+  // Swapped emojis for Feather icon names
   const categories = [
-    { key: 'All', label: 'All Resources', icon: '🌐' },
-    { key: 'Shelters', label: 'Shelters', icon: '⛺' },
-    { key: 'Medical', label: 'Medical', icon: '🏥' },
-    { key: 'Water', label: 'Clean Water', icon: '💧' },
-    { key: 'Food', label: 'Food Rations', icon: '🍲' },
-    { key: 'Power', label: 'Power / Radio', icon: '⚡' },
+    { key: 'All', label: 'All Resources', icon: 'list' },
+    { key: 'Shelters', label: 'Shelters', icon: 'home' },
+    { key: 'Medical', label: 'Medical', icon: 'activity' },
+    { key: 'Water', label: 'Clean Water', icon: 'droplet' },
+    { key: 'Food', label: 'Food Rations', icon: 'package' },
+    { key: 'Power', label: 'Power / Radio', icon: 'zap' },
   ];
 
   const handleSyncMesh = () => {
     const result = resourceService.refreshMeshSync();
-    Alert.alert('📡 Mesh Telemetry Synced', result.message, [{ text: 'OK' }]);
+    Alert.alert('Mesh Telemetry Synced', result.message, [{ text: 'OK' }]);
   };
 
   const getCategoryColor = (category: ResourceCategory) => {
     switch (category) {
       case 'shelter':
-        return { text: Colors.primary, bg: Colors.accentGreen, icon: '⛺' };
+        return { text: Colors.primary, bg: Colors.accentGreen, icon: 'home' };
       case 'medical':
-        return { text: Colors.sosRed, bg: Colors.sosRedLight, icon: '🏥' };
+        return { text: Colors.sosRed, bg: Colors.sosRedLight, icon: 'activity' };
       case 'water':
-        return { text: Colors.waterBlue, bg: Colors.waterBlueLight, icon: '💧' };
+        return { text: Colors.waterBlue, bg: Colors.waterBlueLight, icon: 'droplet' };
       case 'food':
-        return { text: Colors.foodOrange, bg: Colors.foodOrangeLight, icon: '🍞' };
+        return { text: Colors.foodOrange, bg: Colors.foodOrangeLight, icon: 'package' };
       case 'power':
-        return { text: '#D97706', bg: '#FEF3C7', icon: '⚡' };
+        return { text: '#D97706', bg: '#FEF3C7', icon: 'zap' };
       default:
-        return { text: Colors.primary, bg: Colors.accentGreen, icon: '📦' };
+        return { text: Colors.primary, bg: Colors.accentGreen, icon: 'box' };
     }
   };
 
@@ -76,37 +78,13 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
     switch (status) {
       case 'OPEN':
       case 'VERIFIED':
-        return {
-          bg: '#E8F5EC',
-          border: '#C8E6C9',
-          color: '#167044',
-          dot: '#167044',
-          label: 'OPEN 24/7',
-        };
+        return { bg: '#E8F5EC', border: '#C8E6C9', color: '#167044', dot: '#167044', label: 'OPEN 24/7' };
       case 'LIMITED':
-        return {
-          bg: '#FEF3C7',
-          border: '#FDE68A',
-          color: '#B45309',
-          dot: '#F59E0B',
-          label: 'LIMITED SPOTS',
-        };
+        return { bg: '#FEF3C7', border: '#FDE68A', color: '#B45309', dot: '#F59E0B', label: 'LIMITED SPOTS' };
       case 'FULL':
-        return {
-          bg: '#FEE2E2',
-          border: '#FECACA',
-          color: '#DC2626',
-          dot: '#DC2626',
-          label: 'AT CAPACITY',
-        };
+        return { bg: '#FEE2E2', border: '#FECACA', color: '#DC2626', dot: '#DC2626', label: 'AT CAPACITY' };
       default:
-        return {
-          bg: '#F1F5F9',
-          border: '#CBD5E1',
-          color: '#64748B',
-          dot: '#94A3B8',
-          label: 'CLOSED',
-        };
+        return { bg: '#F1F5F9', border: '#CBD5E1', color: '#64748B', dot: '#94A3B8', label: 'CLOSED' };
     }
   };
 
@@ -114,8 +92,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
     <View style={styles.container}>
       <Header
         title="Emergency Resources"
-        subtitle="Screen 13 • Verified offline shelter, water & triage directory"
-        badge="Screen 13"
+        subtitle="Verified offline shelter, water & triage directory"
         rightAction={
           onViewMap ? (
             <TouchableOpacity
@@ -123,7 +100,8 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
               onPress={onViewMap}
               activeOpacity={0.8}
             >
-              <Text style={styles.mapHeaderBtnText}>🗺️ Map</Text>
+              <Feather name="map" size={14} color="#FFFFFF" />
+              <Text style={styles.mapHeaderBtnText}>Map</Text>
             </TouchableOpacity>
           ) : undefined
         }
@@ -132,7 +110,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
       {/* Mesh Relay Freshness Banner */}
       <View style={styles.meshFreshnessBanner}>
         <View style={styles.meshBannerLeft}>
-          <Text style={styles.meshBeaconDot}>🟢</Text>
+          <View style={styles.meshBeaconDot} />
           <View>
             <Text style={styles.meshBannerTitle}>
               OFFLINE CACHED DIRECTORY • {resources.length} SITES VERIFIED
@@ -147,17 +125,18 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
           onPress={handleSyncMesh}
           activeOpacity={0.7}
         >
-          <Text style={styles.syncQuickBtnText}>🔄 Sync</Text>
+          <Feather name="refresh-cw" size={10} color="#38BDF8" />
+          <Text style={styles.syncQuickBtnText}>Sync</Text>
         </TouchableOpacity>
       </View>
 
       {/* Search Input Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBox}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Feather name="search" size={16} color={Colors.textMuted} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search shelters, clinics, water, rations..."
+            placeholder="Search shelters, clinics, water..."
             placeholderTextColor={Colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -166,7 +145,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.clearText}>✕</Text>
+              <Feather name="x" size={16} color={Colors.textMuted} />
             </TouchableOpacity>
           )}
         </View>
@@ -180,7 +159,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
           <Text
             style={[styles.filterToggleText, onlyAvailable && styles.filterToggleTextActive]}
           >
-            {onlyAvailable ? '✓ Available Only' : 'Show All'}
+            {onlyAvailable ? '✓ Available' : 'Show All'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -201,7 +180,11 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
                 onPress={() => setActiveCategory(cat.key)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.chipIcon}>{cat.icon}</Text>
+                <Feather 
+                  name={cat.icon as any} 
+                  size={14} 
+                  color={isActive ? '#FFFFFF' : Colors.textSecondary} 
+                />
                 <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
                   {cat.label}
                 </Text>
@@ -215,8 +198,8 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
       <ScrollView contentContainerStyle={styles.listContent}>
         {resources.length === 0 ? (
           <Card style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={[Typography.h3, { textAlign: 'center', marginTop: 8 }]}>
+            <Feather name="search" size={32} color={Colors.textMuted} />
+            <Text style={[Typography.h3, { textAlign: 'center', marginTop: 12 }]}>
               No Matching Resources Found
             </Text>
             <Text
@@ -235,7 +218,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
                 setSearchQuery('');
                 setOnlyAvailable(false);
               }}
-              style={{ marginTop: 12 }}
+              style={{ marginTop: 16 }}
             />
           </Card>
         ) : (
@@ -263,7 +246,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
                   {/* Top Card Row: Category Badge & Status Badge */}
                   <View style={styles.resTopRow}>
                     <View style={[styles.catBadge, { backgroundColor: catStyle.bg }]}>
-                      <Text style={styles.catBadgeIcon}>{catStyle.icon}</Text>
+                      <Feather name={catStyle.icon as any} size={12} color={catStyle.text} />
                       <Text
                         style={[
                           styles.catBadgeText,
@@ -305,9 +288,12 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
                   <Text style={[Typography.bodyBold, styles.resTitle]}>
                     {item.name}
                   </Text>
-                  <Text style={styles.landmarkText}>
-                    📍 {item.landmark} • {item.distanceKm} km away
-                  </Text>
+                  <View style={styles.landmarkRow}>
+                    <Feather name="map-pin" size={12} color={Colors.textSecondary} />
+                    <Text style={styles.landmarkText}>
+                       {item.landmark} • {item.distanceKm} km away
+                    </Text>
+                  </View>
 
                   {/* Capacity Bar & Metrics */}
                   <View style={styles.capacitySection}>
@@ -363,20 +349,30 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
                         { backgroundColor: freshness.badgeBg },
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.freshnessText,
-                          { color: freshness.color },
-                        ]}
-                      >
-                        ⏱️ {freshness.status === 'fresh' ? 'FRESH' : 'SYNCED'}: {freshness.label}
-                      </Text>
+                      <View style={styles.freshnessRow}>
+                        <Feather name="clock" size={10} color={freshness.color} />
+                        <Text
+                          style={[
+                            styles.freshnessText,
+                            { color: freshness.color },
+                          ]}
+                        >
+                          {freshness.status === 'fresh' ? 'FRESH' : 'SYNCED'}: {freshness.label}
+                        </Text>
+                      </View>
                     </View>
 
-                    <Text style={styles.meshNodeText}>
-                      📡 {item.verifiedByNode} (Hop #{item.meshHops})
-                    </Text>
-                    <Text style={styles.detailsChevron}>View Details →</Text>
+                    <View style={styles.meshNodeRow}>
+                      <Feather name="radio" size={10} color={Colors.textMuted} />
+                      <Text style={styles.meshNodeText}>
+                        {item.verifiedByNode} (Hop #{item.meshHops})
+                      </Text>
+                    </View>
+                    
+                    <View style={styles.detailsChevronRow}>
+                      <Text style={styles.detailsChevronText}>Details</Text>
+                      <Feather name="arrow-right" size={14} color={Colors.primary} />
+                    </View>
                   </View>
                 </Card>
               </TouchableOpacity>
@@ -392,17 +388,19 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
             activeOpacity={0.8}
           >
             <View style={styles.mapBannerContent}>
-              <Text style={styles.mapBannerIcon}>🗺️</Text>
+              <View style={styles.mapBannerIconWrapper}>
+                <Feather name="map" size={20} color="#38BDF8" />
+              </View>
               <View>
                 <Text style={styles.mapBannerTitle}>
-                  View All Resources on Offline Map (Screen 05)
+                  View All Resources on Map
                 </Text>
                 <Text style={styles.mapBannerSubtitle}>
-                  Visualize GPS coordinates, safe walking detours & shelter locations
+                  Visualize GPS coordinates & safe routes
                 </Text>
               </View>
             </View>
-            <Text style={styles.mapBannerChevron}>➔</Text>
+            <Feather name="chevron-right" size={20} color="#38BDF8" />
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -417,9 +415,12 @@ const styles = StyleSheet.create({
   },
   mapHeaderBtn: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   mapHeaderBtnText: {
     color: '#FFFFFF',
@@ -443,7 +444,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   meshBeaconDot: {
-    fontSize: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#22C55E', // Green dot status
   },
   meshBannerTitle: {
     color: '#38BDF8',
@@ -459,9 +463,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E293B',
     borderColor: '#334155',
     borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   syncQuickBtnText: {
     color: '#38BDF8',
@@ -489,7 +496,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   searchIcon: {
-    fontSize: 14,
     marginRight: 6,
   },
   searchInput: {
@@ -497,11 +503,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textPrimary,
     paddingVertical: 0,
-  },
-  clearText: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    paddingHorizontal: 4,
   },
   filterToggle: {
     paddingHorizontal: 10,
@@ -545,14 +546,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceSecondary,
     borderWidth: 1,
     borderColor: Colors.border,
-    gap: 5,
+    gap: 6,
   },
   chipActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primaryDark,
-  },
-  chipIcon: {
-    fontSize: 12,
   },
   chipText: {
     fontSize: 12,
@@ -573,9 +571,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 20,
   },
-  emptyIcon: {
-    fontSize: 32,
-  },
   resCard: {
     marginVertical: 6,
     padding: 12,
@@ -585,18 +580,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   catBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 6,
-    gap: 4,
-  },
-  catBadgeIcon: {
-    fontSize: 11,
+    gap: 6,
   },
   catBadgeText: {
     fontSize: 10,
@@ -606,7 +598,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 6,
     borderWidth: 1,
     gap: 4,
@@ -624,21 +616,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textPrimary,
   },
+  landmarkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
   landmarkText: {
     fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: 2,
   },
   capacitySection: {
-    marginTop: 10,
+    marginTop: 12,
     backgroundColor: Colors.surfaceSecondary,
-    padding: 8,
+    padding: 10,
     borderRadius: 8,
   },
   capacityHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   capacityLabel: {
     fontSize: 11,
@@ -667,21 +664,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginTop: 8,
+    marginTop: 10,
   },
   amenityPill: {
     backgroundColor: '#F1F5F9',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   amenityPillText: {
     fontSize: 10,
     color: Colors.textSecondary,
+    fontWeight: '500',
   },
   amenityPillMore: {
     paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingVertical: 4,
   },
   amenityPillMoreText: {
     fontSize: 10,
@@ -692,25 +690,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
-    paddingTop: 8,
+    marginTop: 12,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
   },
   freshnessBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 4,
+  },
+  freshnessRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   freshnessText: {
     fontSize: 9,
     fontWeight: '800',
   },
+  meshNodeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   meshNodeText: {
     fontSize: 9,
     color: Colors.textMuted,
   },
-  detailsChevron: {
+  detailsChevronRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  detailsChevronText: {
     fontSize: 11,
     fontWeight: '700',
     color: Colors.primary,
@@ -732,8 +745,10 @@ const styles = StyleSheet.create({
     gap: 12,
     flex: 1,
   },
-  mapBannerIcon: {
-    fontSize: 24,
+  mapBannerIconWrapper: {
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    padding: 8,
+    borderRadius: 8,
   },
   mapBannerTitle: {
     color: '#FFFFFF',
@@ -744,11 +759,5 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 11,
     marginTop: 2,
-  },
-  mapBannerChevron: {
-    color: '#38BDF8',
-    fontSize: 16,
-    fontWeight: '700',
-    marginLeft: 8,
   },
 });

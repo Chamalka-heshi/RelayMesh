@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package relaymesh.spatial;
+
+option go_package = "relaymesh-backend/spatial;spatial";
+
+// Emergency hazard classification
+enum HazardType {
+  HAZARD_TYPE_UNSPECIFIED = 0;
+  FLOOD = 1;
+  ROADBLOCK = 2;
+  LANDSLIDE = 3;
+  DOWNED_POWERLINE = 4;
+  BRIDGE_COLLAPSE = 5;
+  FIRE = 6;
+}
+
+// Hazard severity level
+enum HazardSeverity {
+  SEVERITY_UNSPECIFIED = 0;
+  LOW = 1;
+  MEDIUM = 2;
+  HIGH = 3;
+  CRITICAL = 4;
+}
+
+// Compact spatial payload for emergency hazard updates over mesh radios
+message HazardReport {
+  string id = 1;
+  HazardType hazard_type = 2;
+  HazardSeverity severity = 3;
+  double latitude = 4;
+  double longitude = 5;
+  float radius_meters = 6;
+  string description = 7;
+  string reported_by = 8;
+  int64 timestamp = 9;
+  int32 hop_count = 10;
+  bool is_resolved = 11;
+  int32 confirmations = 12;
+}
+
+// Periodic coordinate broadcast payload for mesh nodes
+message CoordinateBroadcast {
+  string node_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  string role = 4;
+  int32 battery_level = 5;
+  float accuracy = 6;
+  int64 timestamp = 7;
+}
+
+// Regional .mbtiles offline map bundle metadata
+message MapBundleMetadata {
+  string bundle_id = 1;
+  string region_name = 2;
+  int32 min_zoom = 3;
+  int32 max_zoom = 4;
+  double min_lon = 5;
+  double min_lat = 6;
+  double max_lon = 7;
+  double max_lat = 8;
+  int64 file_size_bytes = 9;
+  string checksum = 10;
+  string download_url = 11;
+  int64 updated_at = 12;
+}
+
+// Bounding box spatial query filter
+message SpatialQueryRequest {
+  double min_lon = 1;
+  double min_lat = 2;
+  double max_lon = 3;
+  double max_lat = 4;
+  repeated HazardType types = 5;
+  bool include_resolved = 6;
+}
+
+// Spatial query response returning hazards in viewport
+message SpatialQueryResponse {
+  repeated HazardReport hazards = 1;
+  int64 server_time = 2;
+}

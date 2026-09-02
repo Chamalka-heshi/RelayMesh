@@ -164,12 +164,13 @@ export default function App() {
       case 'sosHistory':
         return <Screen09_SOSHistory />;
 
-      // Member 2: Map
+      // Member 2: Map & Hazard Reporting
       case 'map':
         return (
           <Screen05_OfflineMap
             onSelectResource={(res) => setActiveScreen('resourceDetail')}
             onFilterPress={() => setActiveScreen('mapFilter')}
+            onNavigateHazard={(hzId) => setActiveScreen('routeNav')}
           />
         );
       case 'mapFilter':
@@ -180,7 +181,12 @@ export default function App() {
           />
         );
       case 'routeNav':
-        return <Screen15_RouteNavigation />;
+        return (
+          <Screen15_RouteNavigation
+            onBack={() => setActiveScreen('map')}
+            onNavigateMap={() => setActiveScreen('map')}
+          />
+        );
 
       // Member 3: Messaging
       case 'messages':
@@ -271,7 +277,9 @@ export default function App() {
           <ScreenPill title="Login" active={activeScreen === 'login'} onPress={() => setActiveScreen('login')} />
           <ScreenPill title="Register" active={activeScreen === 'register'} onPress={() => setActiveScreen('register')} />
           <ScreenPill title="Home" active={activeScreen === 'home'} onPress={() => { setActiveTab('home'); setActiveScreen('home'); }} />
-          <ScreenPill title="Map" active={activeScreen === 'map'} onPress={() => { setActiveTab('map'); setActiveScreen('map'); }} />
+          <ScreenPill title="Map (05)" active={activeScreen === 'map'} onPress={() => { setActiveTab('map'); setActiveScreen('map'); }} />
+          <ScreenPill title="Filters (06)" active={activeScreen === 'mapFilter'} onPress={() => setActiveScreen('mapFilter')} />
+          <ScreenPill title="Hazard (15)" active={activeScreen === 'routeNav'} onPress={() => setActiveScreen('routeNav')} />
           <ScreenPill title="SOS" active={activeScreen === 'sos'} onPress={() => setActiveScreen('sos')} />
           <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
           <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />

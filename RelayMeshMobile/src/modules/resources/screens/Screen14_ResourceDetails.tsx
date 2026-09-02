@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons'; // <-- Added Feather icons
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
 import {
   resourceService,
   ResourceItem,
-  ResourceCategory,
 } from '../services/ResourceService';
 
 interface Props {
@@ -58,7 +58,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
   const handleMeshSync = () => {
     const res = resourceService.refreshMeshSync(resource.id);
     Alert.alert(
-      '📡 Mesh Telemetry Synced',
+      'Mesh Telemetry Synced',
       `${res.message}\n\nTimestamp refreshed to current time without internet connectivity.`,
       [{ text: 'OK' }]
     );
@@ -113,8 +113,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
     <View style={styles.container}>
       <Header
         title="Resource Details"
-        subtitle="Screen 14 • Capacity, amenities & offline mesh freshness"
-        badge="Screen 14"
+        subtitle="Capacity, amenities & offline mesh freshness"
         onBackPress={onBackPress}
         rightAction={
           <TouchableOpacity
@@ -122,7 +121,8 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
             onPress={handleMeshSync}
             activeOpacity={0.7}
           >
-            <Text style={styles.headerSyncBtnText}>🔄 Sync</Text>
+            <Feather name="refresh-cw" size={10} color="#38BDF8" />
+            <Text style={styles.headerSyncBtnText}>Sync</Text>
           </TouchableOpacity>
         }
       />
@@ -158,15 +158,26 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
           </View>
 
           <Text style={[Typography.h2, styles.titleText]}>{resource.title}</Text>
-          <Text style={styles.landmarkText}>
-            📍 {resource.landmark}
-          </Text>
-          <Text style={styles.coordsText}>
-            🌐 Coordinates: {resource.latitude.toFixed(4)}° N, {resource.longitude.toFixed(4)}° E • {resource.distanceKm} km away
-          </Text>
-          <Text style={styles.hoursText}>
-            ⏰ Hours: {resource.operatingHours}
-          </Text>
+          
+          <View style={styles.iconTextRow}>
+            <Feather name="map-pin" size={14} color={Colors.textSecondary} />
+            <Text style={styles.landmarkText}>{resource.landmark}</Text>
+          </View>
+
+          <View style={styles.iconTextRow}>
+            <Feather name="navigation" size={14} color={Colors.textMuted} />
+            <Text style={styles.coordsText}>
+              Coordinates: {resource.latitude.toFixed(4)}° N, {resource.longitude.toFixed(4)}° E • {resource.distanceKm} km away
+            </Text>
+          </View>
+
+          <View style={styles.iconTextRow}>
+            <Feather name="clock" size={14} color={Colors.primary} />
+            <Text style={styles.hoursText}>
+              Hours: {resource.operatingHours}
+            </Text>
+          </View>
+
           <Text style={styles.descText}>
             {resource.description}
           </Text>
@@ -233,7 +244,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
 
           {occupancyPercent >= 80 && (
             <View style={styles.capacityWarningBox}>
-              <Text style={styles.warningIcon}>⚠️</Text>
+              <Feather name="alert-triangle" size={16} color="#B45309" />
               <Text style={styles.warningText}>
                 High occupancy warning. Please consider directing new arrivals to nearby secondary shelters if capacity reaches 100%.
               </Text>
@@ -275,7 +286,8 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
             {resource.amenities.map((amenity) => (
               <View key={amenity.id} style={styles.amenityRow}>
                 <View style={styles.amenityIconCircle}>
-                  <Text style={styles.amenityIcon}>{amenity.icon}</Text>
+                  {/* Rendering the data-provided icon as text, since it comes from the mock DB */}
+                  <Text style={styles.amenityIcon}>{amenity.icon}</Text> 
                 </View>
                 <View style={styles.amenityTextCol}>
                   <Text style={styles.amenityName}>{amenity.name}</Text>
@@ -284,7 +296,8 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
                   )}
                 </View>
                 <View style={styles.amenityCheck}>
-                  <Text style={styles.amenityCheckText}>✓ Available</Text>
+                  <Feather name="check-circle" size={10} color={Colors.primary} />
+                  <Text style={styles.amenityCheckText}>Available</Text>
                 </View>
               </View>
             ))}
@@ -358,8 +371,9 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
             onPress={handleMeshSync}
             activeOpacity={0.8}
           >
+            <Feather name="refresh-cw" size={14} color="#FFFFFF" />
             <Text style={styles.syncCardBtnText}>
-              🔄 REQUEST IMMEDIATE MESH STATUS UPDATE
+              REQUEST IMMEDIATE MESH STATUS UPDATE
             </Text>
           </TouchableOpacity>
         </Card>
@@ -368,7 +382,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
         <View style={styles.actionGroup}>
           {onViewMap && (
             <Button
-              title="🧭 VIEW LOCATION ON OFFLINE MAP (SCREEN 05)"
+              title="VIEW LOCATION ON OFFLINE MAP"
               variant="primary"
               onPress={() => onViewMap(resource)}
             />
@@ -376,7 +390,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
 
           {onContact && (
             <Button
-              title="💬 MESSAGE ON-SITE COORDINATOR (CHAT)"
+              title="MESSAGE ON-SITE COORDINATOR"
               variant="outline"
               onPress={() => onContact(resource.contactInfo.coordinator)}
             />
@@ -384,7 +398,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
 
           {onBroadcast && (
             <Button
-              title="📤 BROADCAST RESOURCE OVER MESH (SCREEN 12)"
+              title="BROADCAST RESOURCE OVER MESH"
               variant="outline"
               onPress={() => onBroadcast(resource)}
             />
@@ -408,9 +422,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderColor: '#334155',
     borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   headerSyncBtnText: {
     color: '#38BDF8',
@@ -425,7 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   statusPill: {
     flexDirection: 'row',
@@ -459,28 +476,32 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 18,
     color: Colors.textPrimary,
+    marginBottom: 6,
+  },
+  iconTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 6,
   },
   landmarkText: {
     fontSize: 13,
     color: Colors.textSecondary,
-    marginTop: 4,
     fontWeight: '600',
   },
   coordsText: {
     fontSize: 11,
     color: Colors.textMuted,
-    marginTop: 2,
   },
   hoursText: {
     fontSize: 12,
     color: Colors.primary,
-    marginTop: 4,
     fontWeight: '700',
   },
   descText: {
     fontSize: 13,
     color: Colors.textPrimary,
-    marginTop: 8,
+    marginTop: 12,
     lineHeight: 18,
   },
   sectionCard: {
@@ -538,13 +559,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
-    marginTop: 10,
+    marginTop: 12,
     flexDirection: 'row',
     gap: 8,
     alignItems: 'center',
-  },
-  warningIcon: {
-    fontSize: 16,
   },
   warningText: {
     flex: 1,
@@ -576,7 +594,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 6,
   },
   simBtnText: {
@@ -632,8 +650,11 @@ const styles = StyleSheet.create({
   amenityCheck: {
     backgroundColor: Colors.accentGreen,
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   amenityCheckText: {
     fontSize: 10,
@@ -677,9 +698,12 @@ const styles = StyleSheet.create({
   syncCardBtn: {
     backgroundColor: Colors.primary,
     borderRadius: 8,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
+    gap: 8,
+    marginTop: 16,
   },
   syncCardBtnText: {
     color: '#FFFFFF',
@@ -688,7 +712,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   actionGroup: {
-    marginTop: 10,
-    gap: 8,
+    marginTop: 12,
+    gap: 10,
   },
 });

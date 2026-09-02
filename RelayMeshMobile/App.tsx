@@ -211,13 +211,29 @@ export default function App() {
 
       // Member 4: Mesh
       case 'mesh':
-        return <Screen16_MeshTopology />;
+        return (
+          <Screen16_MeshTopology
+            onNavigate={(screenId) => setActiveScreen(screenId as ScreenId)}
+          />
+        );
       case 'nearby':
-        return <Screen17_NodeDiscovery />;
+        return (
+          <Screen17_NodeDiscovery
+            onNavigate={(screenId) => setActiveScreen(screenId as ScreenId)}
+          />
+        );
       case 'storeForward':
-        return <Screen18_NetworkDiagnostics />;
+        return (
+          <Screen18_NetworkDiagnostics
+            onNavigate={(screenId) => setActiveScreen(screenId as ScreenId)}
+          />
+        );
       case 'relayConfig':
-        return <Screen19_RelaySettings />;
+        return (
+          <Screen19_RelaySettings
+            onNavigate={(screenId) => setActiveScreen(screenId as ScreenId)}
+          />
+        );
 
       // Member 5: Resources & Profile
       case 'resources':

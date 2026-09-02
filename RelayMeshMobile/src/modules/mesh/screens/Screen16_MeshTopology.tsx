@@ -2,8 +2,9 @@
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Header, Card, Colors, Typography } from '../../../shared';
 import { MeshService, MeshNode } from '../meshService';
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
-export const Screen16_MeshTopology: React.FC = () => {
+export const Screen16_MeshTopology = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
   const [nodes, setNodes] = useState<MeshNode[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -12,8 +13,13 @@ export const Screen16_MeshTopology: React.FC = () => {
   }, []);
 
   const fetchTopology = async () => {
-    const activeNodes = await MeshService.getNearbyNodes();
-    setNodes(activeNodes);
+    try {
+      const activeNodes = await MeshService.getNearbyNodes();
+      setNodes(activeNodes);
+    } catch (e) {
+      console.warn('Could not load network map:', e);
+      setNodes([]);
+    }
   };
 
   const onRefresh = async () => {
@@ -22,7 +28,6 @@ export const Screen16_MeshTopology: React.FC = () => {
     setRefreshing(false);
   };
 
-  // Compute live topology statistics
   const totalNodes = nodes.length;
   const rescueUnits = nodes.filter((n) => n.type === 'rescue').length;
   const directHops = nodes.filter((n) => n.hops === 'Direct').length;
@@ -34,39 +39,36 @@ export const Screen16_MeshTopology: React.FC = () => {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <Header
-        title="Network Topology"
-        subtitle="Real-time visualization of local mesh routing"
+        title="Network Map"
+        subtitle="Live map of nearby phones connected to you"
       />
 
-      {/* Network Overview Cards */}
       <View style={styles.metricsGrid}>
         <Card style={styles.metricCard}>
           <Text style={styles.metricValue}>{totalNodes + 1}</Text>
-          <Text style={Typography.caption}>Active Peers (Incl. You)</Text>
+          <Text style={Typography.caption}>Connected Phones</Text>
         </Card>
         <Card style={styles.metricCard}>
           <Text style={styles.metricValue}>{rescueUnits}</Text>
-          <Text style={Typography.caption}>Rescue Gateways</Text>
+          <Text style={Typography.caption}>Rescue Teams</Text>
         </Card>
       </View>
 
       <Card style={styles.graphCard}>
-        <Text style={[Typography.bodyBold, { marginBottom: 12 }]}>Visual Mesh Graph</Text>
+        <Text style={[Typography.bodyBold, { marginBottom: 12 }]}>Your Network Connection</Text>
         
-        {/* Local Node representation */}
         <View style={styles.centralNodeContainer}>
           <View style={styles.centralNode}>
             <Text style={{ fontSize: 24 }}>📱</Text>
           </View>
-          <Text style={Typography.bodyBold}>Your Phone (Host Node)</Text>
-          <Text style={Typography.caption}>Relay Engine Active</Text>
+          <Text style={Typography.bodyBold}>Your Phone</Text>
+          <Text style={Typography.caption}>Ready to send & receive</Text>
         </View>
 
         <View style={styles.dividerLine} />
 
-        {/* Connected Peers topology tree */}
         <Text style={[Typography.caption, { marginBottom: 8, fontWeight: '700' }]}>
-          CONNECTED HOP NODES ({directHops} Direct)
+          PHONES NEARBY ({directHops} Direct)
         </Text>
 
         {nodes.map((node) => (
@@ -81,11 +83,12 @@ export const Screen16_MeshTopology: React.FC = () => {
               <Text style={Typography.caption}>{node.dist} • {node.rssi}</Text>
             </View>
             <View style={styles.linkBadge}>
-              <Text style={styles.linkBadgeText}>Link OK</Text>
+              <Text style={styles.linkBadgeText}>Connected</Text>
             </View>
           </View>
         ))}
-      </Card>
+      </Card>  
+     <MeshNavigationFooter currentScreen="Screen16" onNavigate={onNavigate} />
     </ScrollView>
   );
 };

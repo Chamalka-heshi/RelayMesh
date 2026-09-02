@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 're
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
 import { MeshService, MeshNode, StoredPacket } from '../meshService';
 import { HardwareBridge } from '../hardwareBridge'; 
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
-export const Screen17_NodeDiscovery: React.FC = () => {
+export const Screen17_NodeDiscovery = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [nearbyNodes, setNearbyNodes] = useState<MeshNode[]>([]);
 
@@ -16,8 +17,13 @@ export const Screen17_NodeDiscovery: React.FC = () => {
   }, []);
 
   const loadNodes = async () => {
-    const nodes = await MeshService.getNearbyNodes();
-    setNearbyNodes(nodes);
+    try {
+      const nodes = await MeshService.getNearbyNodes();
+      setNearbyNodes(nodes);
+    } catch (e) {
+      console.warn('Could not load devices:', e);
+      setNearbyNodes([]);
+    }
   };
 
   const handlePhysicalBLEScan = async () => {
@@ -25,10 +31,7 @@ export const Screen17_NodeDiscovery: React.FC = () => {
 
     await HardwareBridge.startPhysicalScan(
       async (discoveredNode: MeshNode) => {
-        // Save to storage
         await MeshService.addDiscoveredNode(discoveredNode);
-
-        // Update local screen state without duplicate IDs
         setNearbyNodes((prev) => {
           const exists = prev.some((n) => n.id === discoveredNode.id);
           if (exists) {
@@ -38,7 +41,7 @@ export const Screen17_NodeDiscovery: React.FC = () => {
         });
       },
       (error) => {
-        Alert.alert('BLE Scan Error', error.message);
+        Alert.alert('Search Error', error.message);
         setIsScanning(false);
       }
     );
@@ -53,38 +56,26 @@ export const Screen17_NodeDiscovery: React.FC = () => {
     const sosPacket: StoredPacket = {
       id: `sos_${Date.now()}`,
       sender: 'HostDevice_User',
-      payload: 'CRITICAL: Rising floodwaters - Immediate evacuation needed!',
+      payload: 'CRITICAL: Need immediate help!',
       timestamp: new Date().toLocaleTimeString(),
       status: 'pending',
     };
 
-    // Ensure you await this call
-    const updatedQueue = await MeshService.addPacketToQueue(sosPacket);
-    console.log('[DEBUG Screen 17] Queue length after insert:', updatedQueue.length);
-
     await MeshService.addPacketToQueue(sosPacket);
-    Alert.alert('🚨 SOS Broadcasted', 'Message staged in local store-and-forward queue.');
+    Alert.alert('🚨 Distress Call Sent', 'Your help message has been saved and shared with nearby devices.');
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
-        title="Nearby Devices"
-        subtitle={`${nearbyNodes.length} hardware nodes registered`}
+        title="Search Devices"
+        subtitle={`${nearbyNodes.length} devices found nearby`}
       />
 
-      <Card style={{ backgroundColor: '#FCE8E6', borderColor: '#F5C6CB', borderWidth: 1, marginBottom: 12 }}>
-        <Text style={[Typography.bodyBold, { color: '#721C24' }]}>Emergency Broadcast</Text>
-        <Text style={[Typography.caption, { color: '#721C24', marginVertical: 4 }]}>
-          Broadcast emergency alert into local store-and-forward queue.
-        </Text>
-        <Button title="🚨 BROADCAST EMERGENCY SOS" variant="primary" onPress={handleBroadcastSOS} />
-      </Card>
-
       <Card style={{ backgroundColor: '#E6F4EA', marginBottom: 12 }}>
-        <Text style={Typography.bodyBold}>Native BLE Radio Bridge</Text>
+        <Text style={Typography.bodyBold}>Bluetooth Device Finder</Text>
         <Text style={[Typography.caption, { marginTop: 2 }]}>
-          Scans physical 2.4GHz Bluetooth Spectrum for nearby active smartphones.
+          Uses Bluetooth to find other phones nearby without cellular service.
         </Text>
       </Card>
 
@@ -111,11 +102,13 @@ export const Screen17_NodeDiscovery: React.FC = () => {
       {isScanning && <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 10 }} />}
 
       <Button
-        title={isScanning ? "STOPPING BLE RADIO..." : "SCAN PHYSICAL BLE RADIOS (10s)"}
+        title={isScanning ? "STOPPING SEARCH..." : "FIND NEARBY PHONES (10s)"}
         variant="secondary"
         onPress={handlePhysicalBLEScan}
         disabled={isScanning}
       />
+
+      <MeshNavigationFooter currentScreen="Screen17" onNavigate={onNavigate} />
     </ScrollView>
   );
 };

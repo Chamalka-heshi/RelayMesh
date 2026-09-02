@@ -6,6 +6,10 @@ import EncryptionKey from './EncryptionKey';
 import Resource from './Resource';
 import UserProfile from './UserProfile';
 
+import { MeshNodeModel } from './models/MeshNodeModel';
+import { DiscoveredPeerModel } from './models/DiscoveredPeerModel';
+import { PacketQueueModel } from './models/PacketQueueModel';
+
 // Initialize and export the database
 export const database = new Database({
   adapter: dbAdapter,
@@ -15,6 +19,9 @@ export const database = new Database({
     EncryptionKey,
     Resource,
     UserProfile,
+    MeshNodeModel,
+    DiscoveredPeerModel,
+    PacketQueueModel,
   ],
 });
 
@@ -24,4 +31,7 @@ export {
   EncryptionKey,
   Resource,
   UserProfile,
+  MeshNodeModel,
+  DiscoveredPeerModel,
+  PacketQueueModel,
 };

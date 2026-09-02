@@ -3,6 +3,9 @@ import {
   StatusBar,
   StyleSheet,
   View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, BottomNav, TabName } from './src/shared';
@@ -81,7 +84,7 @@ type ScreenId =
 
 function MainNavigator() {
   const { user, loading } = useAuth();
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
   const [activeTab, setActiveTab] = useState<TabName>('home');
   const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
   const [selectedResourceId, setSelectedResourceId] = useState<string>('res-shelter-1');
@@ -302,15 +305,6 @@ function MainNavigator() {
     activeScreen === 'register' ||
     activeScreen === 'directChat';
 
-  if (isFullScreen) {
-    return (
-      <View style={styles.container}>
-        {activeScreen === 'splash' && <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />}
-        <View style={styles.screenContainer}>{renderScreen()}</View>
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -349,11 +343,13 @@ function MainNavigator() {
       <View style={styles.screenContainer}>{renderScreen()}</View>
 
       {/* Persistent Bottom Navigation with Center Floating SOS Button */}
-      <BottomNav
-        activeTab={activeTab}
-        onTabPress={handleTabPress}
-        onSOSPress={handleSOSPress}
-      />
+      {!isFullScreen && (
+        <BottomNav
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onSOSPress={handleSOSPress}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -366,10 +362,59 @@ export default function App() {
   );
 }
 
+const ScreenPill: React.FC<{ title: string; active: boolean; onPress: () => void }> = ({
+  title,
+  active,
+  onPress,
+}) => (
+  <TouchableOpacity
+    style={[styles.pill, active && styles.pillActive]}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
+    <Text style={[styles.pillText, active && styles.pillTextActive]}>{title}</Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  showcaseBar: {
+    backgroundColor: '#0F172A',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E293B',
+  },
+  showcaseScroll: {
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 6,
+  },
+  showcaseLabel: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '800',
+    marginRight: 4,
+  },
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
+  },
+  pillActive: {
+    backgroundColor: Colors.primaryLight,
+  },
+  pillText: {
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  pillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   screenContainer: {
     flex: 1,

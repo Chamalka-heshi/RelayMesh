@@ -331,10 +331,14 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
                   isSelected && styles.markerWrapperSelected,
                 ]}
                 onPress={() => {
-                  setSelectedItem(p);
                   if (p.category === 'hazard') {
                     hazardService.setActiveHazard(p.id);
+                    if (selectedItem?.id === p.id && onNavigateHazard) {
+                      onNavigateHazard(p.id);
+                      return;
+                    }
                   }
+                  setSelectedItem(p);
                 }}
                 activeOpacity={0.8}
               >

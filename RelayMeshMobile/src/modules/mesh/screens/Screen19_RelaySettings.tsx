@@ -2,19 +2,18 @@
 import { View, Text, StyleSheet, ScrollView, Switch, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
-import { useNetworkSync } from '../useNetworkSync'; // Member 4 Hook
+import { useNetworkSync } from '../useNetworkSync';
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
 const SETTINGS_KEY = '@relay_mesh_settings';
 
-export const Screen19_RelaySettings: React.FC = () => {
+export const Screen19_RelaySettings = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
   const [relayEnabled, setRelayEnabled] = useState(true);
   const [bgRelay, setBgRelay] = useState(true);
   const [powerSaver, setPowerSaver] = useState(false);
 
-  // Member 4 Integration: Hook into auto-sync and internet state
   const { isConnected, isSyncing, triggerAutoSync } = useNetworkSync();
 
-  // Load saved settings on screen mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -26,13 +25,12 @@ export const Screen19_RelaySettings: React.FC = () => {
           setPowerSaver(powerSaver);
         }
       } catch (e) {
-        console.error('Failed to load relay settings:', e);
+        console.error('Failed to load settings:', e);
       }
     };
     loadSettings();
   }, []);
 
-  // Save updated settings to local storage
   const saveSettings = async (newRelay: boolean, newBg: boolean, newPower: boolean) => {
     try {
       await AsyncStorage.setItem(
@@ -40,7 +38,7 @@ export const Screen19_RelaySettings: React.FC = () => {
         JSON.stringify({ relayEnabled: newRelay, bgRelay: newBg, powerSaver: newPower })
       );
     } catch (e) {
-      console.error('Failed to save relay settings:', e);
+      console.error('Failed to save settings:', e);
     }
   };
 
@@ -58,43 +56,41 @@ export const Screen19_RelaySettings: React.FC = () => {
     setPowerSaver(val);
     saveSettings(relayEnabled, bgRelay, val);
     if (val) {
-      Alert.alert('Emergency Power Mode', 'BLE scan rate throttled to preserve battery life below 20%.');
+      Alert.alert('Battery Saver Activated', 'Bluetooth scanning speed slowed down to save battery below 20%.');
     }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
-        title="Relay Radio & Sync Configuration"
-        subtitle="Screen 19: Pipeline Visualization & Network Settings"
+        title="App Settings"
+        subtitle="Manage connections and power saving options"
       />
 
-      {/* MEMBER 4 DATA PIPELINE VISUALIZATION CARD */}
       <Card style={{ backgroundColor: isConnected ? '#E6F4EA' : '#FFF3CD', marginBottom: 16 }}>
         <Text style={Typography.bodyBold}>
-          {isConnected ? '🟢 Data Pipeline: Gateway Active' : '🟡 Data Pipeline: Staging Packets Locally'}
+          {isConnected ? '🟢 Internet Status: Online' : '🟡 Internet Status: Offline'}
         </Text>
         <Text style={[Typography.caption, { marginVertical: 4 }]}>
           {isConnected
-            ? 'Internet connection active. Queued packets will flush directly to Supabase cloud.'
-            : 'No active connection. Incoming packets staged in local store-and-forward buffer.'}
+            ? 'Internet is connected. Messages will send to the internet server.'
+            : 'No internet connection. Messages are being saved locally on your phone.'}
         </Text>
         {isSyncing && <ActivityIndicator size="small" color={Colors.primary} style={{ marginVertical: 6 }} />}
         <Button
-          title={isSyncing ? "SYNCING TO GATEWAY..." : "FORCE MANUAL CLOUD INGESTION"}
+          title={isSyncing ? "UPLOADING..." : "UPLOAD SAVED MESSAGES NOW"}
           variant="primary"
           onPress={triggerAutoSync}
           disabled={isSyncing || !isConnected}
         />
       </Card>
 
-      {/* YOUR ORIGINAL SETTINGS CARDS */}
       <Card>
         <View style={styles.switchRow}>
           <View style={{ flex: 1, paddingRight: 8 }}>
-            <Text style={Typography.bodyBold}>Mesh Relay Forwarding</Text>
+            <Text style={Typography.bodyBold}>Share My Phone's Connection</Text>
             <Text style={Typography.caption}>
-              {relayEnabled ? 'Active: Forwarding emergency packets for peers.' : 'Disabled: Device will not route peer traffic.'}
+              {relayEnabled ? 'On: Helps pass emergency messages for people nearby.' : 'Off: Your phone will not pass messages for others.'}
             </Text>
           </View>
           <Switch
@@ -106,8 +102,8 @@ export const Screen19_RelaySettings: React.FC = () => {
 
         <View style={styles.switchRow}>
           <View style={{ flex: 1, paddingRight: 8 }}>
-            <Text style={Typography.bodyBold}>Background Relay Mode</Text>
-            <Text style={Typography.caption}>Keep forwarding active when app is minimized.</Text>
+            <Text style={Typography.bodyBold}>Keep Working in Background</Text>
+            <Text style={Typography.caption}>Keep helping nearby phones even when app is closed.</Text>
           </View>
           <Switch
             value={bgRelay}
@@ -119,8 +115,8 @@ export const Screen19_RelaySettings: React.FC = () => {
 
         <View style={styles.switchRow}>
           <View style={{ flex: 1, paddingRight: 8 }}>
-            <Text style={Typography.bodyBold}>Emergency Power Optimizer</Text>
-            <Text style={Typography.caption}>Throttle discovery scan rate when battery falls below 20%.</Text>
+            <Text style={Typography.bodyBold}>Battery Saver Mode</Text>
+            <Text style={Typography.caption}>Saves battery power when your battery level drops below 20%.</Text>
           </View>
           <Switch
             value={powerSaver}
@@ -129,6 +125,8 @@ export const Screen19_RelaySettings: React.FC = () => {
           />
         </View>
       </Card>
+
+      <MeshNavigationFooter currentScreen="Screen19" onNavigate={onNavigate} />
     </ScrollView>
   );
 };

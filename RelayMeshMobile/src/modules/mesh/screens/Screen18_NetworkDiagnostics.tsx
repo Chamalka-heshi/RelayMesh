@@ -2,27 +2,32 @@
 import { View, Text, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
 import { MeshService, StoredPacket } from '../meshService';
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
-export const Screen18_NetworkDiagnostics: React.FC = () => {
+export const Screen18_NetworkDiagnostics = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [packets, setPackets] = useState<StoredPacket[]>([]);
   const [totalForwarded, setTotalForwarded] = useState(182);
 
-  // Load persistent packet queue on mount
   useEffect(() => {
     loadQueue();
   }, []);
 
   const loadQueue = async () => {
-    const queue = await MeshService.getQueuedPackets();
-    setPackets(queue);
+    try {
+      const queue = await MeshService.getQueuedPackets();
+      setPackets(queue);
+    } catch (e) {
+      console.warn('Could not load outbox:', e);
+      setPackets([]);
+    }
   };
 
   const handleSimulateNewPacket = async () => {
     const newPacket: StoredPacket = {
       id: `pkt_${Date.now()}`,
-      sender: `Node_${Math.floor(100 + Math.random() * 900)}`,
-      payload: 'SOS: Need medical supplies at Shelter #3',
+      sender: `User_${Math.floor(100 + Math.random() * 900)}`,
+      payload: 'SOS: Need medical supplies nearby',
       timestamp: new Date().toLocaleTimeString(),
       status: 'pending',
     };
@@ -32,9 +37,8 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
   };
 
   const handleForceSync = async () => {
-    // Check if packets array is empty
     if (packets.length === 0) {
-      Alert.alert('Queue Empty', 'There are no pending offline packets to synchronize.');
+      Alert.alert('Outbox Empty', 'There are no pending messages to send.');
       return;
     }
 
@@ -48,13 +52,12 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
         setPackets([]);
         
         Alert.alert(
-          'Cloud Sync Successful',
-          `${result.count} emergency packet(s) successfully pushed to Supabase Gateway!`
+          'Messages Sent!',
+          `${result.count} emergency message(s) successfully uploaded!`
         );
       }
     } catch (error) {
-      console.error('Sync error:', error);
-      Alert.alert('Sync Failed', 'Could not complete cloud synchronization.');
+      Alert.alert('Upload Failed', 'Could not reach the internet server.');
     } finally {
       setIsSyncing(false);
     }
@@ -63,34 +66,32 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
-        title="Store & Forward Queue"
-        subtitle="Manage offline emergency packets awaiting gateway connection"
+        title="Message Outbox"
+        subtitle="Saved messages waiting to be sent"
       />
 
       <Card style={{ backgroundColor: '#FCE8E6' }}>
-        <Text style={Typography.bodyBold}>Local Packet Buffer Status</Text>
+        <Text style={Typography.bodyBold}>Offline Storage</Text>
         <Text style={[Typography.caption, { marginTop: 2 }]}>
-          Packets are encrypted locally and safely forwarded whenever a gateway node or internet connection is reached.
+          Messages are saved safely on your phone and sent automatically when internet or a rescue team is found.
         </Text>
       </Card>
 
-      {/* Diagnostic Metrics Grid */}
       <View style={styles.metricsGrid}>
         <Card style={styles.metricCard}>
           <Text style={styles.metricValue}>{packets.length}</Text>
-          <Text style={Typography.caption}>Pending Packets</Text>
+          <Text style={Typography.caption}>Pending Messages</Text>
         </Card>
         <Card style={styles.metricCard}>
           <Text style={styles.metricValue}>{totalForwarded}</Text>
-          <Text style={Typography.caption}>Total Relayed</Text>
+          <Text style={Typography.caption}>Total Delivered</Text>
         </Card>
       </View>
 
-      {/* Packet Preview List */}
       <Card style={{ marginBottom: 16 }}>
-        <Text style={[Typography.bodyBold, { marginBottom: 8 }]}>Recent Queued Payloads</Text>
+        <Text style={[Typography.bodyBold, { marginBottom: 8 }]}>Pending Messages</Text>
         {packets.length === 0 ? (
-          <Text style={Typography.caption}>No pending packets in buffer.</Text>
+          <Text style={Typography.caption}>No pending messages in outbox.</Text>
         ) : (
           packets.slice(0, 3).map((pkt) => (
             <View key={pkt.id} style={styles.packetItem}>
@@ -104,12 +105,12 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
       {isSyncing && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={[Typography.caption, { marginTop: 8 }]}>Connecting to gateway & flushing queue...</Text>
+          <Text style={[Typography.caption, { marginTop: 8 }]}>Uploading saved messages...</Text>
         </View>
       )}
 
       <Button
-        title={isSyncing ? "SYNCING QUEUE..." : "FORCE SYNC QUEUED DATA"}
+        title={isSyncing ? "UPLOADING..." : "SEND MESSAGES TO CLOUD NOW"}
         variant="primary"
         onPress={handleForceSync}
         disabled={isSyncing}
@@ -117,12 +118,14 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
 
       <View style={{ marginTop: 12 }}>
         <Button
-          title="+ Simulate Incoming Offline Packet"
+          title="+ Test Adding Message"
           variant="secondary"
           onPress={handleSimulateNewPacket}
           disabled={isSyncing}
         />
       </View>
+
+      <MeshNavigationFooter currentScreen="Screen18" onNavigate={onNavigate} />
     </ScrollView>
   );
 };

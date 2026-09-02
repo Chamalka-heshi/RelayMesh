@@ -1,8 +1,6 @@
 import Conversation from '../Conversation';
 import Message from '../Message';
 import EncryptionKey from '../EncryptionKey';
-
-export { Conversation, Message, EncryptionKey };
 import Resource from '../Resource';
 import UserProfile from '../UserProfile';
 

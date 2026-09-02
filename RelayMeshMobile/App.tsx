@@ -45,10 +45,13 @@ import {
   Screen02_ResourceDirectory,
   Screen03_ResourceDetails,
   Screen04_HomeDashboard,
+  Screen13_EmergencyResourcesDirectory,
+  Screen14_ResourceDetails,
   Screen20_AppSettings,
   Screen23_UserProfile,
   Screen24_Login,
   Screen25_Register,
+  resourceService,
 } from './src/modules/resources';
 
 type ScreenId =
@@ -81,6 +84,7 @@ function MainNavigator() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
   const [activeTab, setActiveTab] = useState<TabName>('home');
   const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
+  const [selectedResourceId, setSelectedResourceId] = useState<string>('res-shelter-1');
 
   // Tab switcher
   const handleTabPress = (tab: TabName) => {
@@ -172,7 +176,14 @@ function MainNavigator() {
       case 'map':
         return (
           <Screen05_OfflineMap
-            onSelectResource={() => setActiveScreen('resourceDetail')}
+            onSelectResource={(resName) => {
+              const found = resourceService.getResourceByName(resName);
+              if (found) {
+                setSelectedResourceId(found.id);
+                resourceService.setSelectedResource(found.id);
+              }
+              setActiveScreen('resourceDetail');
+            }}
             onFilterPress={() => setActiveScreen('mapFilter')}
             onNavigateHazard={(hzId) => setActiveScreen('routeNav')}
           />
@@ -227,14 +238,34 @@ function MainNavigator() {
       // Member 5: Resources & Profile
       case 'resources':
         return (
-          <Screen02_ResourceDirectory
-            onSelectResource={() => setActiveScreen('resourceDetail')}
+          <Screen13_EmergencyResourcesDirectory
+            onSelectResource={(id) => {
+              setSelectedResourceId(id);
+              resourceService.setSelectedResource(id);
+              setActiveScreen('resourceDetail');
+            }}
+            onViewMap={() => {
+              setActiveTab('map');
+              setActiveScreen('map');
+            }}
           />
         );
       case 'resourceDetail':
         return (
-          <Screen03_ResourceDetails
+          <Screen14_ResourceDetails
+            resourceId={selectedResourceId}
             onBackPress={() => setActiveScreen('resources')}
+            onViewMap={(res) => {
+              setActiveTab('map');
+              setActiveScreen('map');
+            }}
+            onContact={(coordinator) => {
+              setSelectedChat(coordinator);
+              setActiveScreen('directChat');
+            }}
+            onBroadcast={(res) => {
+              setActiveScreen('broadcast');
+            }}
           />
         );
       case 'settings':
@@ -300,7 +331,8 @@ function MainNavigator() {
           <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
           <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
           <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
-          <ScreenPill title="Resources" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
+          <ScreenPill title="Resources (13)" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
+          <ScreenPill title="Res Details (14)" active={activeScreen === 'resourceDetail'} onPress={() => setActiveScreen('resourceDetail')} />
           
           {/* Member 4: Added buttons for Screens 16, 17, 18, 19 */}
           <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />

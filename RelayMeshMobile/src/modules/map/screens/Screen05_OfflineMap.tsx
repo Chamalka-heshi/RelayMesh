@@ -41,16 +41,17 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
 
   // Request & listen to Live GPS from device or browser
   const requestLiveGPS = () => {
-    if (typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
+    const geo = typeof navigator !== 'undefined' ? (navigator as any).geolocation : undefined;
+    if (geo) {
+      geo.getCurrentPosition(
+        (pos: any) => {
           const { latitude, longitude, accuracy } = pos.coords;
           spatialService.setUserLocation(latitude, longitude, true, accuracy);
           setIsLiveGps(true);
           setGpsAccuracy(accuracy);
           setFilterVersion((v) => v + 1);
         },
-        (err) => {
+        (err: any) => {
           console.warn('Geolocation access failed or denied:', err.message);
           Alert.alert(
             'GPS Permission Notice',
@@ -69,25 +70,26 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
 
   useEffect(() => {
     // Attempt automatic live GPS acquisition on mount
-    if (typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
+    const geo = typeof navigator !== 'undefined' ? (navigator as any).geolocation : undefined;
+    if (geo) {
+      geo.getCurrentPosition(
+        (pos: any) => {
           const { latitude, longitude, accuracy } = pos.coords;
           spatialService.setUserLocation(latitude, longitude, true, accuracy);
           setIsLiveGps(true);
           setGpsAccuracy(accuracy);
           setFilterVersion((v) => v + 1);
         },
-        (err) => {
+        (err: any) => {
           // Keep simulated default silently
-          console.log('[Screen05] Using baseline disaster coordinates:', err.message);
+          console.log('[Screen05] Using baseline disaster coordinates:', err?.message);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
 
       // Watch for position updates as device moves
-      const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
+      const watchId = geo.watchPosition(
+        (pos: any) => {
           const { latitude, longitude, accuracy } = pos.coords;
           spatialService.setUserLocation(latitude, longitude, true, accuracy);
           setIsLiveGps(true);
@@ -99,7 +101,7 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
       );
 
       return () => {
-        navigator.geolocation.clearWatch(watchId);
+        geo.clearWatch(watchId);
       };
     }
   }, []);

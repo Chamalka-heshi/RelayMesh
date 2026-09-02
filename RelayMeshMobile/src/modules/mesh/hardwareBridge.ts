@@ -2,8 +2,15 @@ import { BleManager, Device, BleError } from 'react-native-ble-plx';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { MeshNode } from './meshService';
 
-// Initialize BleManager ONLY on native mobile platforms to prevent Web crashes
-export const bleManager = Platform.OS !== 'web' ? new BleManager() : null;
+// Initialize BleManager safely on native mobile platforms to prevent Web/Jest/Expo Go crashes
+export const bleManager = (() => {
+  if (Platform.OS === 'web') return null;
+  try {
+    return new BleManager();
+  } catch {
+    return null;
+  }
+})();
 
 export const HardwareBridge = {
   async requestPermissions(): Promise<boolean> {

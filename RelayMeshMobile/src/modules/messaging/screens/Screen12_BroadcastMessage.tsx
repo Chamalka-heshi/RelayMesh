@@ -5,98 +5,220 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
-  Alert,
+  Alert
 } from 'react-native';
-import { Header, Card, Button, Colors, Typography } from '../../../shared';
+import { Colors, Typography, Card } from '../../../shared';
 
-export const Screen12_BroadcastMessage: React.FC = () => {
-  const [broadcastType, setBroadcastType] = useState('General');
-  const [messageText, setMessageText] = useState('');
-  const [shareLocation, setShareLocation] = useState(true);
+interface Props {
+  onBack?: () => void;
+}
 
-  const handleSendBroadcast = () => {
-    if (!messageText.trim()) {
-      Alert.alert('Empty Message', 'Please enter a broadcast message to flood across the mesh.');
+const CATEGORIES = ['General', 'Relief Update', 'Hazard Alert', 'Urgent Help'];
+
+export const Screen12_BroadcastMessage: React.FC<Props> = ({ onBack }) => {
+  const [selectedCategory, setSelectedCategory] = useState('General');
+  const [message, setMessage] = useState('');
+  const [attachGPS, setAttachGPS] = useState(true);
+
+  const handleBroadcast = () => {
+    if (!message.trim()) {
+      if (Platform.OS === 'web') {
+        // @ts-ignore
+        window.alert('Please write a broadcast message first.');
+      } else {
+        Alert.alert('Empty Message', 'Please write a broadcast message first.');
+      }
       return;
     }
-    Alert.alert('📢 Broadcast Flooded', 'Message has been propagated to all nearby nodes within 5 hops.');
-    setMessageText('');
+
+    // Prototype logs
+    console.log('--- NEW MESH BROADCAST ---');
+    console.log('Category:', selectedCategory);
+    console.log('Message:', message);
+    console.log('Includes GPS:', attachGPS);
+    console.log('TTL:', 5, 'Hops');
+
+    // Cross-platform alert handling
+    if (Platform.OS === 'web') {
+      // @ts-ignore
+      window.alert('Broadcast Sent!\n\nYour message is currently routing through the mesh network.');
+      if (onBack) onBack(); // Navigate back after clicking OK
+    } else {
+      Alert.alert(
+        'Broadcast Sent',
+        'Your message is currently routing through the mesh network.',
+        [{ text: 'OK', onPress: onBack }]
+      );
+    }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Header
-        title="Network Broadcast"
-        subtitle="Flood message to all devices in range"
-      />
-
-      <Card variant="accentGreen">
-        <Text style={Typography.bodyBold}>Broadcast Channel (TTL: 5 Hops)</Text>
-        <Text style={[Typography.caption, { marginTop: 2 }]}>
-          Every smartphone receiving this message will forward it to others.
-        </Text>
-      </Card>
-
-      <Card>
-        <Text style={[Typography.captionBold, { marginBottom: 8 }]}>SELECT BROADCAST CATEGORY:</Text>
-        <View style={styles.catRow}>
-          {['General', 'Relief Update', 'Hazard Alert', 'Urgent Help'].map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[styles.catBtn, broadcastType === cat && styles.catBtnActive]}
-              onPress={() => setBroadcastType(cat)}
-            >
-              <Text style={[styles.catText, broadcastType === cat && styles.catTextActive]}>
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onBack} style={styles.backBtn}>
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
+          <View>
+            <Text style={[Typography.h2, { color: Colors.textPrimary }]}>Network Broadcast</Text>
+            <Text style={styles.subtitle}>Flood message to all devices in range</Text>
+          </View>
         </View>
 
-        <TextInput
-          placeholder="Write announcement or emergency report..."
-          placeholderTextColor={Colors.textMuted}
-          value={messageText}
-          onChangeText={setMessageText}
-          style={styles.textArea}
-          multiline
-          numberOfLines={4}
-        />
+        {/* TTL Info Card */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoCardTitle}>Broadcast Channel (TTL: 5 Hops)</Text>
+          <Text style={styles.infoCardText}>Every smartphone receiving this message will forward it to others.</Text>
+        </View>
 
-        <TouchableOpacity
-          style={styles.locationToggle}
-          onPress={() => setShareLocation(!shareLocation)}
-        >
-          <View style={[styles.checkbox, shareLocation && styles.checkboxActive]}>
-            {shareLocation && <Text style={{ color: '#FFFFFF', fontSize: 12 }}>✓</Text>}
+        {/* Form Container */}
+        <View style={styles.formContainer}>
+          
+          <Text style={styles.label}>SELECT BROADCAST CATEGORY:</Text>
+          <View style={styles.categoryRow}>
+            {CATEGORIES.map((cat) => {
+              const isActive = selectedCategory === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.categoryPill, isActive && styles.categoryPillActive]}
+                  onPress={() => setSelectedCategory(cat)}
+                >
+                  <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-          <Text style={[Typography.body, { marginLeft: 10 }]}>
-            Attach current GPS location fix
-          </Text>
-        </TouchableOpacity>
-      </Card>
 
-      <Button
-        title="FLOOD BROADCAST MESSAGE"
-        variant="primary"
-        onPress={handleSendBroadcast}
-        style={{ marginTop: 12 }}
-      />
-    </ScrollView>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Write announcement or emergency report..."
+              placeholderTextColor={Colors.textMuted}
+              multiline
+              textAlignVertical="top"
+              value={message}
+              onChangeText={setMessage}
+            />
+          </View>
+
+          {/* GPS Toggle */}
+          <TouchableOpacity 
+            style={styles.checkboxRow} 
+            activeOpacity={0.7}
+            onPress={() => setAttachGPS(!attachGPS)}
+          >
+            <View style={[styles.checkbox, attachGPS && styles.checkboxActive]}>
+              {attachGPS && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>Attach current GPS location fix</Text>
+          </TouchableOpacity>
+
+        </View>
+      </ScrollView>
+
+      {/* Sticky Bottom Action Button */}
+      <View style={styles.bottomActionContainer}>
+        <TouchableOpacity style={styles.floodButton} onPress={handleBroadcast}>
+          <Text style={styles.floodButtonText}>SEND BROADCAST MESSAGE</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16, paddingBottom: 40 },
-  catRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  catBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, backgroundColor: Colors.surfaceSecondary },
-  catBtnActive: { backgroundColor: Colors.primary },
-  catText: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
-  catTextActive: { color: '#FFFFFF' },
-  textArea: { backgroundColor: Colors.surfaceSecondary, borderRadius: 12, padding: 12, height: 100, textAlignVertical: 'top', borderWidth: 1, borderColor: Colors.border, fontSize: 13, color: Colors.textPrimary },
-  locationToggle: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
-  checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  scrollContent: { padding: 16, paddingBottom: 100, paddingTop: 48 },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
+  backBtn: { marginRight: 16 },
+  backIcon: { fontSize: 24, color: Colors.primary },
+  subtitle: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
+  
+  infoCard: {
+    backgroundColor: '#E6F4EA', // Light green from Figma
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#CEEAD6',
+    marginBottom: 24,
+  },
+  infoCardTitle: { fontSize: 14, fontWeight: '700', color: '#137333', marginBottom: 4 },
+  infoCardText: { fontSize: 13, color: '#137333' },
+
+  formContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  label: { fontSize: 12, fontWeight: '700', color: Colors.textSecondary, marginBottom: 12 },
+  
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  categoryPill: { 
+    backgroundColor: '#F1F3F4', 
+    paddingHorizontal: 16, 
+    paddingVertical: 8, 
+    borderRadius: 20 
+  },
+  categoryPillActive: { backgroundColor: '#137333' }, // Forest green
+  categoryText: { fontSize: 13, color: '#5F6368', fontWeight: '600' },
+  categoryTextActive: { color: '#FFFFFF' },
+
+  inputWrapper: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8EAED',
+    marginBottom: 16,
+  },
+  textInput: {
+    height: 120,
+    padding: 16,
+    fontSize: 15,
+    color: Colors.textPrimary,
+  },
+
+  checkboxRow: { flexDirection: 'row', alignItems: 'center' },
+  checkbox: { 
+    width: 20, height: 20, 
+    borderRadius: 4, 
+    borderWidth: 2, 
+    borderColor: '#137333', 
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxActive: { backgroundColor: '#137333' },
+  checkmark: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' },
+  checkboxLabel: { fontSize: 14, color: Colors.textSecondary },
+
+  bottomActionContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  floodButton: {
+    backgroundColor: '#137333',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  floodButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: 'bold', letterSpacing: 0.5 },
 });

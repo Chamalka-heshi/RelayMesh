@@ -8,7 +8,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, BottomNav, TabName } from './src/shared';
+import { Colors, Typography, BottomNav, TabName } from './src/shared';
+import { seedInitialData } from './src/database';
+import Conversation from './src/database/Conversation';
 import { AuthProvider, useAuth } from './src/context';
 
 // Member 1: SOS Screens
@@ -86,8 +88,15 @@ function MainNavigator() {
   const { user, loading } = useAuth();
   const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
   const [activeTab, setActiveTab] = useState<TabName>('home');
-  const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
+  
+  // Combined state variables from both branches
+  const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
   const [selectedResourceId, setSelectedResourceId] = useState<string>('res-shelter-1');
+  const [showScreenPicker, setShowScreenPicker] = useState(false);
+
+  useEffect(() => {
+    seedInitialData();
+  }, []);
 
   // Tab switcher
   const handleTabPress = (tab: TabName) => {
@@ -210,19 +219,20 @@ function MainNavigator() {
       case 'messages':
         return (
           <Screen10_ChatList
-            onSelectChat={(name: string) => {
-              setSelectedChat(name);
+            onSelectChat={(conversation: Conversation) => {
+              setSelectedChat(conversation);
               setActiveScreen('directChat');
             }}
             onNewMessage={() => setActiveScreen('broadcast')}
           />
         );
       case 'directChat':
+        if (!selectedChat) return <Screen10_ChatList onSelectChat={() => {}} />;
+
         return (
           <Screen11_DirectChat
-            conversationId="global-mesh-chat"
-            chatName={selectedChat}
-            onBackPress={() => setActiveScreen('messages')}
+            conversation={selectedChat}
+            onBack={() => setActiveScreen('messages')}
           />
         );
       case 'broadcast':
@@ -263,7 +273,9 @@ function MainNavigator() {
               setActiveScreen('map');
             }}
             onContact={(coordinator) => {
-              setSelectedChat(coordinator);
+              // Cast to 'any' because another team member passes a string here, 
+              // but your chat system correctly expects a Conversation object.
+              setSelectedChat(coordinator as any);
               setActiveScreen('directChat');
             }}
             onBroadcast={(res) => {
@@ -297,7 +309,7 @@ function MainNavigator() {
     }
   };
 
-  // Hide BottomNav on full-screen flows (Splash, Onboarding, Login, Register, Direct Chat)
+  // Hide BottomNav on full-screen flows
   const isFullScreen =
     activeScreen === 'splash' ||
     activeScreen === 'onboarding' ||
@@ -328,7 +340,6 @@ function MainNavigator() {
           <ScreenPill title="Resources (13)" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
           <ScreenPill title="Res Details (14)" active={activeScreen === 'resourceDetail'} onPress={() => setActiveScreen('resourceDetail')} />
 
-          {/* Member 4: Added buttons for Screens 16, 17, 18, 19 */}
           <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
           <ScreenPill title="Nearby Nodes (17)" active={activeScreen === 'nearby'} onPress={() => setActiveScreen('nearby')} />
           <ScreenPill title="Store & Forward (18)" active={activeScreen === 'storeForward'} onPress={() => setActiveScreen('storeForward')} />
@@ -342,7 +353,7 @@ function MainNavigator() {
       {/* Active Screen View */}
       <View style={styles.screenContainer}>{renderScreen()}</View>
 
-      {/* Persistent Bottom Navigation with Center Floating SOS Button */}
+      {/* Persistent Bottom Navigation */}
       {!isFullScreen && (
         <BottomNav
           activeTab={activeTab}

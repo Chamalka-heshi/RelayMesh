@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
-  ScrollView,
 } from 'react-native';
-import { Colors, Typography, BottomNav, TabName } from './src/shared';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, BottomNav, TabName } from './src/shared';
+import { AuthProvider, useAuth } from './src/context';
 
 // Member 1: SOS Screens
 import {
@@ -78,11 +76,11 @@ type ScreenId =
   | 'settings'
   | 'profile';
 
-export default function App() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
+function MainNavigator() {
+  const { user, loading } = useAuth();
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
   const [activeTab, setActiveTab] = useState<TabName>('home');
   const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
-  const [showScreenPicker, setShowScreenPicker] = useState(false);
 
   // Tab switcher
   const handleTabPress = (tab: TabName) => {
@@ -112,20 +110,26 @@ export default function App() {
     switch (activeScreen) {
       // Member 5: Auth & Home
       case 'splash':
-        return <Screen00_Splash onFinish={() => setActiveScreen('onboarding')} />;
+        return <Screen00_Splash onFinish={() => setActiveScreen(user ? 'home' : 'onboarding')} />;
       case 'onboarding':
-        return <Screen01_Onboarding onComplete={() => setActiveScreen('home')} />;
+        return <Screen01_Onboarding onComplete={() => setActiveScreen(user ? 'home' : 'login')} />;
       case 'login':
         return (
           <Screen24_Login
-            onLoginSuccess={() => setActiveScreen('home')}
+            onLoginSuccess={() => {
+              setActiveTab('home');
+              setActiveScreen('home');
+            }}
             onNavigateRegister={() => setActiveScreen('register')}
           />
         );
       case 'register':
         return (
           <Screen25_Register
-            onRegisterSuccess={() => setActiveScreen('home')}
+            onRegisterSuccess={() => {
+              setActiveTab('home');
+              setActiveScreen('home');
+            }}
             onNavigateLogin={() => setActiveScreen('login')}
           />
         );
@@ -133,9 +137,9 @@ export default function App() {
         return (
           <Screen04_HomeDashboard
             onNavigate={(dest) => {
-              if (dest === 'map') setActiveScreen('map');
-              else if (dest === 'messages') setActiveScreen('messages');
-              else if (dest === 'resources') setActiveScreen('resources');
+              if (dest === 'map') { setActiveTab('map'); setActiveScreen('map'); }
+              else if (dest === 'messages') { setActiveTab('messages'); setActiveScreen('messages'); }
+              else if (dest === 'resources') { setActiveTab('resources'); setActiveScreen('resources'); }
               else if (dest === 'mesh') setActiveScreen('mesh');
               else if (dest === 'settings') setActiveScreen('settings');
               else if (dest === 'profile') setActiveScreen('profile');
@@ -155,7 +159,7 @@ export default function App() {
       case 'sosAlert':
         return (
           <Screen07_SOSAlert
-            onViewMap={() => setActiveScreen('map')}
+            onViewMap={() => { setActiveTab('map'); setActiveScreen('map'); }}
             onCancelSOS={() => setActiveScreen('home')}
           />
         );
@@ -168,7 +172,7 @@ export default function App() {
       case 'map':
         return (
           <Screen05_OfflineMap
-            onSelectResource={(res) => setActiveScreen('resourceDetail')}
+            onSelectResource={() => setActiveScreen('resourceDetail')}
             onFilterPress={() => setActiveScreen('mapFilter')}
             onNavigateHazard={(hzId) => setActiveScreen('routeNav')}
           />
@@ -202,6 +206,7 @@ export default function App() {
       case 'directChat':
         return (
           <Screen11_DirectChat
+            conversationId="global-mesh-chat"
             chatName={selectedChat}
             onBackPress={() => setActiveScreen('messages')}
           />
@@ -236,7 +241,9 @@ export default function App() {
         return (
           <Screen20_AppSettings
             onNavigateProfile={() => setActiveScreen('profile')}
-            onLogout={() => setActiveScreen('login')}
+            onLogout={() => {
+              setActiveScreen('login');
+            }}
           />
         );
       case 'profile':
@@ -263,6 +270,15 @@ export default function App() {
     activeScreen === 'login' ||
     activeScreen === 'register' ||
     activeScreen === 'directChat';
+
+  if (isFullScreen) {
+    return (
+      <View style={styles.container}>
+        {activeScreen === 'splash' && <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />}
+        <View style={styles.screenContainer}>{renderScreen()}</View>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -301,70 +317,27 @@ export default function App() {
       <View style={styles.screenContainer}>{renderScreen()}</View>
 
       {/* Persistent Bottom Navigation with Center Floating SOS Button */}
-      {!isFullScreen && (
-        <BottomNav
-          activeTab={activeTab}
-          onTabPress={handleTabPress}
-          onSOSPress={handleSOSPress}
-        />
-      )}
+      <BottomNav
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+        onSOSPress={handleSOSPress}
+      />
     </SafeAreaView>
   );
 }
 
-const ScreenPill: React.FC<{ title: string; active: boolean; onPress: () => void }> = ({
-  title,
-  active,
-  onPress,
-}) => (
-  <TouchableOpacity
-    style={[styles.pill, active && styles.pillActive]}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    <Text style={[styles.pillText, active && styles.pillTextActive]}>{title}</Text>
-  </TouchableOpacity>
-);
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainNavigator />
+    </AuthProvider>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  showcaseBar: {
-    backgroundColor: '#0F172A',
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-  },
-  showcaseScroll: {
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    gap: 6,
-  },
-  showcaseLabel: {
-    color: '#94A3B8',
-    fontSize: 10,
-    fontWeight: '800',
-    marginRight: 4,
-  },
-  pill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: '#1E293B',
-  },
-  pillActive: {
-    backgroundColor: Colors.primaryLight,
-  },
-  pillText: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  pillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
   },
   screenContainer: {
     flex: 1,

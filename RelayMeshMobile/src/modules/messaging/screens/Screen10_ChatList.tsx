@@ -13,9 +13,9 @@ import { database } from '../../../database';
 import Conversation from '../../../database/Conversation';
 
 interface Props {
-  onSelectChat?: (chatName: string) => void;
+  onSelectChat?: (conversation: Conversation) => void;
   onNewMessage?: () => void;
-  conversations: Conversation[]; // Injected automatically by WatermelonDB
+  conversations: Conversation[]; 
 }
 
 const RawScreen10_ChatList: React.FC<Props> = ({
@@ -25,6 +25,24 @@ const RawScreen10_ChatList: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'chats' | 'broadcasts' | 'requests'>('chats');
   const [search, setSearch] = useState('');
+
+  // Safely extract the peer's name from the stringified JSON array
+  const getPeerName = (participantIdsStr: string) => {
+    try {
+      const ids = JSON.parse(participantIdsStr);
+      const peer = ids.find((id: string) => id !== 'local_user_id');
+      return peer ? `Node ${peer.substring(0, 6).toUpperCase()}` : 'Unknown Node';
+    } catch (error) {
+      // Fallback if parsing fails
+      return `Node ${participantIdsStr.substring(0, 6)}`;
+    }
+  };
+
+  // Convert the timestamp to a readable time format
+  const formatTime = (timestamp: number) => {
+    if (!timestamp) return 'Just now';
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <View style={styles.container}>
@@ -60,7 +78,24 @@ const RawScreen10_ChatList: React.FC<Props> = ({
             Chats ({conversations.length})
           </Text>
         </TouchableOpacity>
-        {/* Other tabs omitted for brevity, keep your original ones here! */}
+
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'broadcasts' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('broadcasts')}
+        >
+          <Text style={[styles.tabText, activeTab === 'broadcasts' && styles.tabTextActive]}>
+            Broadcasts (0)
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'requests' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('requests')}
+        >
+          <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>
+            Requests
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Conversations List */}
@@ -68,7 +103,7 @@ const RawScreen10_ChatList: React.FC<Props> = ({
         {conversations.map((item) => (
           <TouchableOpacity
             key={item.id}
-            onPress={() => onSelectChat && onSelectChat(item.id)}
+            onPress={() => onSelectChat && onSelectChat(item)}
             activeOpacity={0.7}
           >
             <Card style={styles.chatCard}>
@@ -81,9 +116,12 @@ const RawScreen10_ChatList: React.FC<Props> = ({
                 {/* Content */}
                 <View style={styles.chatInfo}>
                   <View style={styles.nameRow}>
-                    <Text style={Typography.bodyBold}>Node {item.participantIds.substring(0, 6)}...</Text>
-                    {/* Placeholder for relation fetching */}
-                    <Text style={Typography.caption}>Just now</Text>
+                    <Text style={Typography.bodyBold}>
+                      {getPeerName(item.participantIds)}
+                    </Text>
+                    <Text style={Typography.caption}>
+                      {formatTime(item.lastMessageAt)}
+                    </Text>
                   </View>
                   
                   <Text
@@ -99,7 +137,7 @@ const RawScreen10_ChatList: React.FC<Props> = ({
         ))}
       </ScrollView>
 
-      {/* Floating Action Button - Enhanced shadow and blur aesthetic */}
+      {/* Floating Action Button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={onNewMessage}
@@ -112,16 +150,18 @@ const RawScreen10_ChatList: React.FC<Props> = ({
 };
 
 // --- WATERMELONDB SUBSCRIPTION ---
-// This observes the 'conversations' table and triggers a re-render anytime the data changes.
 const enhance = withObservables([], () => ({
   conversations: database.collections.get<Conversation>('conversations').query().observe(),
 }));
 
-// Export the enhanced component
 export const Screen10_ChatList = enhance(RawScreen10_ChatList);
 
+// --- STYLES ---
 const styles = StyleSheet.create({
-  // ... Keep all your original styles, but replace these specific ones for the updated aesthetic:
+  container: { 
+    flex: 1, 
+    backgroundColor: Colors.background 
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,19 +169,113 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)', // Semi-transparent glass effect
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  badge: { 
+    backgroundColor: Colors.accentGreen, 
+    borderColor: Colors.accentGreenBorder, 
+    borderWidth: 1, 
+    paddingHorizontal: 8, 
+    paddingVertical: 3, 
+    borderRadius: 8 
+  },
+  badgeText: { 
+    color: Colors.primary, 
+    fontSize: 10, 
+    fontWeight: '700' 
+  },
+  searchWrapper: { 
+    paddingHorizontal: 16, 
+    paddingVertical: 8, 
+    backgroundColor: 'transparent' 
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.04)', // Soft transparent overlay
-    borderRadius: 16, // Smoother edges
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    borderRadius: 16,
     paddingHorizontal: 12,
     height: 44,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  searchIcon: { 
+    fontSize: 15, 
+    marginRight: 8 
+  },
+  searchInput: { 
+    flex: 1, 
+    fontSize: 13, 
+    color: Colors.textPrimary 
+  },
+  tabRow: { 
+    flexDirection: 'row', 
+    paddingHorizontal: 16, 
+    paddingVertical: 8, 
+    backgroundColor: 'transparent', 
+    gap: 8 
+  },
+  tabBtn: { 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: 16, 
+    backgroundColor: 'rgba(0,0,0,0.05)' 
+  },
+  tabBtnActive: { 
+    backgroundColor: Colors.primary 
+  },
+  tabText: { 
+    fontSize: 12, 
+    color: Colors.textSecondary, 
+    fontWeight: '600' 
+  },
+  tabTextActive: { 
+    color: '#FFFFFF' 
+  },
+  listContent: { 
+    padding: 16, 
+    paddingBottom: 80 
+  },
+  chatCard: { 
+    marginVertical: 5, 
+    padding: 12, 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.03, 
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  chatRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center' 
+  },
+  avatar: { 
+    width: 46, 
+    height: 46, 
+    borderRadius: 23, 
+    backgroundColor: 'rgba(0,0,0,0.03)', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginRight: 12 
+  },
+  avatarIcon: { 
+    fontSize: 22 
+  },
+  chatInfo: { 
+    flex: 1 
+  },
+  nameRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center' 
+  },
+  lastMessage: { 
+    color: Colors.textSecondary, 
+    fontSize: 13, 
+    marginTop: 2 
   },
   fab: {
     position: 'absolute',
@@ -159,25 +293,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  // (Paste the rest of your original styles here)
-  container: { flex: 1, backgroundColor: Colors.background },
-  badge: { backgroundColor: Colors.accentGreen, borderColor: Colors.accentGreenBorder, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  badgeText: { color: Colors.primary, fontSize: 10, fontWeight: '700' },
-  searchWrapper: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: 'transparent' },
-  searchIcon: { fontSize: 15, marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 13, color: Colors.textPrimary },
-  tabRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: 'transparent', gap: 8 },
-  tabBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.05)' },
-  tabBtnActive: { backgroundColor: Colors.primary },
-  tabText: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
-  tabTextActive: { color: '#FFFFFF' },
-  listContent: { padding: 16, paddingBottom: 80 },
-  chatCard: { marginVertical: 5, padding: 12, backgroundColor: '#fff', borderRadius: 16, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 8 },
-  chatRow: { flexDirection: 'row', alignItems: 'center' },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(0,0,0,0.03)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  avatarIcon: { fontSize: 22 },
-  chatInfo: { flex: 1 },
-  nameRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  lastMessage: { color: Colors.textSecondary, fontSize: 13, marginTop: 2 },
-  fabIcon: { fontSize: 22 },
+  fabIcon: { 
+    fontSize: 22 
+  },
 });

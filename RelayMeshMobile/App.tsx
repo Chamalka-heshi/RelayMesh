@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -9,6 +9,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { Colors, Typography, BottomNav, TabName } from './src/shared';
+import { seedInitialData } from './src/database';
+import Conversation from './src/database/Conversation';
 
 // Member 1: SOS Screens
 import {
@@ -81,8 +83,12 @@ type ScreenId =
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
   const [activeTab, setActiveTab] = useState<TabName>('home');
-  const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
+  const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
   const [showScreenPicker, setShowScreenPicker] = useState(false);
+
+  useEffect(() => {
+    seedInitialData();
+  }, []);
 
   // Tab switcher
   const handleTabPress = (tab: TabName) => {
@@ -192,18 +198,20 @@ export default function App() {
       case 'messages':
         return (
           <Screen10_ChatList
-            onSelectChat={(name: string) => {
-              setSelectedChat(name);
+            onSelectChat={(conversation: Conversation) => {
+              setSelectedChat(conversation);
               setActiveScreen('directChat');
             }}
             onNewMessage={() => setActiveScreen('broadcast')}
           />
         );
       case 'directChat':
+        if (!selectedChat) return <Screen10_ChatList onSelectChat={() => {}} />;
+
         return (
           <Screen11_DirectChat
-            chatName={selectedChat}
-            onBackPress={() => setActiveScreen('messages')}
+            conversation={selectedChat}
+            onBack={() => setActiveScreen('messages')}
           />
         );
       case 'broadcast':

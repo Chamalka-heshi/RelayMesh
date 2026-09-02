@@ -11,10 +11,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "2.2.0",
     "@expo/metro-runtime": "~6.1.2",
     "@nozbe/watermelondb": "^0.28.0",
     "@nozbe/with-observables": "^1.6.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "expo": "~54.0.37",
     "expo-dev-client": "~6.0.21",
     "lokijs": "^1.5.12",

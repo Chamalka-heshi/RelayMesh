@@ -108,8 +108,8 @@ function MainNavigator() {
       case 'messages':
         setActiveScreen('messages');
         break;
-      case 'resources':
-        setActiveScreen('resources');
+      case 'profile':
+        setActiveScreen('profile');
         break;
     }
   };
@@ -152,7 +152,7 @@ function MainNavigator() {
             onNavigate={(dest) => {
               if (dest === 'map') { setActiveTab('map'); setActiveScreen('map'); }
               else if (dest === 'messages') { setActiveTab('messages'); setActiveScreen('messages'); }
-              else if (dest === 'resources') { setActiveTab('resources'); setActiveScreen('resources'); }
+              else if (dest === 'resources') { setActiveScreen('resources'); }
               else if (dest === 'mesh') setActiveScreen('mesh');
               else if (dest === 'settings') setActiveScreen('settings');
               else if (dest === 'profile') setActiveScreen('profile');
@@ -363,8 +363,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    // 1. Force the app to never exceed the window width
+    width: '100%',
+    maxWidth: '100%',
+    // 2. Hide anything that tries to bleed off the edges globally
+    overflow: 'hidden',
   },
   screenContainer: {
     flex: 1,
+    // 3. Ensure the screen wrapper strictly respects the parent's boundaries
+    width: '100%',
   },
 });

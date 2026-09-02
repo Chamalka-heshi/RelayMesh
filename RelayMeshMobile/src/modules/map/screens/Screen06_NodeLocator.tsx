@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
+import { spatialService } from '../services/SpatialService';
+import { LayerFilterState } from '../types';
 
 interface Props {
   onApply?: () => void;
@@ -14,19 +16,27 @@ interface Props {
 }
 
 export const Screen06_NodeLocator: React.FC<Props> = ({ onApply, onReset }) => {
-  const [filters, setFilters] = useState({
-    sosAlerts: true,
-    shelters: true,
-    medicalCenters: true,
-    waterSources: true,
-    foodDistribution: true,
-    hazards: true,
-    rescueTeams: true,
-    nearbyDevices: true,
-  });
+  const [filters, setFilters] = useState<LayerFilterState>(() =>
+    spatialService.getFilterState()
+  );
 
-  const toggleFilter = (key: keyof typeof filters) => {
+  useEffect(() => {
+    setFilters(spatialService.getFilterState());
+  }, []);
+
+  const toggleFilter = (key: keyof LayerFilterState) => {
     setFilters({ ...filters, [key]: !filters[key] });
+  };
+
+  const handleApply = () => {
+    spatialService.setFilterState(filters);
+    if (onApply) onApply();
+  };
+
+  const handleReset = () => {
+    spatialService.resetFilterState();
+    setFilters(spatialService.getFilterState());
+    if (onReset) onReset();
   };
 
   return (
@@ -91,12 +101,12 @@ export const Screen06_NodeLocator: React.FC<Props> = ({ onApply, onReset }) => {
         <Button
           title="APPLY FILTERS"
           variant="primary"
-          onPress={onApply || (() => {})}
+          onPress={handleApply}
         />
         <Button
           title="RESET TO DEFAULT"
           variant="outline"
-          onPress={onReset || (() => {})}
+          onPress={handleReset}
         />
       </View>
     </ScrollView>

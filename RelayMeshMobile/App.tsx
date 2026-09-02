@@ -168,12 +168,13 @@ function MainNavigator() {
       case 'sosHistory':
         return <Screen09_SOSHistory />;
 
-      // Member 2: Map
+      // Member 2: Map & Hazard Reporting
       case 'map':
         return (
           <Screen05_OfflineMap
             onSelectResource={() => setActiveScreen('resourceDetail')}
             onFilterPress={() => setActiveScreen('mapFilter')}
+            onNavigateHazard={(hzId) => setActiveScreen('routeNav')}
           />
         );
       case 'mapFilter':
@@ -184,7 +185,12 @@ function MainNavigator() {
           />
         );
       case 'routeNav':
-        return <Screen15_RouteNavigation />;
+        return (
+          <Screen15_RouteNavigation
+            onBack={() => setActiveScreen('map')}
+            onNavigateMap={() => setActiveScreen('map')}
+          />
+        );
 
       // Member 3: Messaging
       case 'messages':
@@ -277,6 +283,35 @@ function MainNavigator() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
+
+      {/* Top Figma Screen Showcase Switcher Bar */}
+      <View style={styles.showcaseBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.showcaseScroll}>
+          <Text style={styles.showcaseLabel}>FIGMA SCREENS:</Text>
+          <ScreenPill title="Splash" active={activeScreen === 'splash'} onPress={() => setActiveScreen('splash')} />
+          <ScreenPill title="Onboard" active={activeScreen === 'onboarding'} onPress={() => setActiveScreen('onboarding')} />
+          <ScreenPill title="Login" active={activeScreen === 'login'} onPress={() => setActiveScreen('login')} />
+          <ScreenPill title="Register" active={activeScreen === 'register'} onPress={() => setActiveScreen('register')} />
+          <ScreenPill title="Home" active={activeScreen === 'home'} onPress={() => { setActiveTab('home'); setActiveScreen('home'); }} />
+          <ScreenPill title="Map (05)" active={activeScreen === 'map'} onPress={() => { setActiveTab('map'); setActiveScreen('map'); }} />
+          <ScreenPill title="Filters (06)" active={activeScreen === 'mapFilter'} onPress={() => setActiveScreen('mapFilter')} />
+          <ScreenPill title="Hazard (15)" active={activeScreen === 'routeNav'} onPress={() => setActiveScreen('routeNav')} />
+          <ScreenPill title="SOS" active={activeScreen === 'sos'} onPress={() => setActiveScreen('sos')} />
+          <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
+          <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
+          <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
+          <ScreenPill title="Resources" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
+          
+          {/* Member 4: Added buttons for Screens 16, 17, 18, 19 */}
+          <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
+          <ScreenPill title="Nearby Nodes (17)" active={activeScreen === 'nearby'} onPress={() => setActiveScreen('nearby')} />
+          <ScreenPill title="Store & Forward (18)" active={activeScreen === 'storeForward'} onPress={() => setActiveScreen('storeForward')} />
+          <ScreenPill title="Relay Config (19)" active={activeScreen === 'relayConfig'} onPress={() => setActiveScreen('relayConfig')} />
+
+          <ScreenPill title="Settings" active={activeScreen === 'settings'} onPress={() => setActiveScreen('settings')} />
+          <ScreenPill title="Profile" active={activeScreen === 'profile'} onPress={() => setActiveScreen('profile')} />
+        </ScrollView>
+      </View>
 
       {/* Active Screen View */}
       <View style={styles.screenContainer}>{renderScreen()}</View>

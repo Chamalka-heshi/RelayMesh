@@ -58,6 +58,10 @@ export const Screen17_NodeDiscovery: React.FC = () => {
       status: 'pending',
     };
 
+    // Ensure you await this call
+    const updatedQueue = await MeshService.addPacketToQueue(sosPacket);
+    console.log('[DEBUG Screen 17] Queue length after insert:', updatedQueue.length);
+
     await MeshService.addPacketToQueue(sosPacket);
     Alert.alert('🚨 SOS Broadcasted', 'Message staged in local store-and-forward queue.');
   };

@@ -41,16 +41,17 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
 
   // Request & listen to Live GPS from device or browser
   const requestLiveGPS = () => {
-    if (typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
+    const geo = typeof navigator !== 'undefined' ? (navigator as any).geolocation : undefined;
+    if (geo) {
+      geo.getCurrentPosition(
+        (pos: any) => {
           const { latitude, longitude, accuracy } = pos.coords;
           spatialService.setUserLocation(latitude, longitude, true, accuracy);
           setIsLiveGps(true);
           setGpsAccuracy(accuracy);
           setFilterVersion((v) => v + 1);
         },
-        (err) => {
+        (err: any) => {
           console.warn('Geolocation access failed or denied:', err.message);
           Alert.alert(
             'GPS Permission Notice',
@@ -69,25 +70,26 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
 
   useEffect(() => {
     // Attempt automatic live GPS acquisition on mount
-    if (typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
+    const geo = typeof navigator !== 'undefined' ? (navigator as any).geolocation : undefined;
+    if (geo) {
+      geo.getCurrentPosition(
+        (pos: any) => {
           const { latitude, longitude, accuracy } = pos.coords;
           spatialService.setUserLocation(latitude, longitude, true, accuracy);
           setIsLiveGps(true);
           setGpsAccuracy(accuracy);
           setFilterVersion((v) => v + 1);
         },
-        (err) => {
+        (err: any) => {
           // Keep simulated default silently
-          console.log('[Screen05] Using baseline disaster coordinates:', err.message);
+          console.log('[Screen05] Using baseline disaster coordinates:', err?.message);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
 
       // Watch for position updates as device moves
-      const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
+      const watchId = geo.watchPosition(
+        (pos: any) => {
           const { latitude, longitude, accuracy } = pos.coords;
           spatialService.setUserLocation(latitude, longitude, true, accuracy);
           setIsLiveGps(true);
@@ -99,7 +101,7 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
       );
 
       return () => {
-        navigator.geolocation.clearWatch(watchId);
+        geo.clearWatch(watchId);
       };
     }
   }, []);
@@ -331,13 +333,14 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
                   isSelected && styles.markerWrapperSelected,
                 ]}
                 onPress={() => {
-                  setSelectedItem(p);
-                  if (p.category === 'hazard' && onNavigateHazard) {
+                  if (p.category === 'hazard') {
                     hazardService.setActiveHazard(p.id);
+                    if (onNavigateHazard) {
+                      onNavigateHazard(p.id);
+                      return;
+                    }
                   }
-                  if (onSelectResource) {
-                    onSelectResource(p.name);
-                  }
+                  setSelectedItem(p);
                 }}
                 activeOpacity={0.8}
               >
@@ -495,6 +498,35 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
                 </>
               )}
             </View>
+
+            {/* Direct Action Button: Hazard Detour Guidance (Screen 15) */}
+            {selectedItem.category === 'hazard' && onNavigateHazard && (
+              <TouchableOpacity
+                style={styles.hazardActionBtn}
+                onPress={() => {
+                  hazardService.setActiveHazard(selectedItem.id);
+                  onNavigateHazard(selectedItem.id);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.hazardActionBtnText}>
+                  🧭 AVOID HAZARD & VIEW DETOUR (SCREEN 15) →
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Direct Action Button: Resource Detail */}
+            {selectedItem.category !== 'hazard' && onSelectResource && (
+              <TouchableOpacity
+                style={styles.resourceActionBtn}
+                onPress={() => onSelectResource(selectedItem.name)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.resourceActionBtnText}>
+                  📋 VIEW RESOURCE DETAILS →
+                </Text>
+              </TouchableOpacity>
+            )}
           </Card>
         </View>
       )}
@@ -844,5 +876,39 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     color: Colors.textSecondary,
+  },
+  hazardActionBtn: {
+    marginTop: 10,
+    backgroundColor: Colors.sosRed,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.sosRed,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  hazardActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  resourceActionBtn: {
+    marginTop: 10,
+    backgroundColor: Colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resourceActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

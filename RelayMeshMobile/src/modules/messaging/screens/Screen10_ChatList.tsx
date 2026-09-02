@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -75,7 +75,7 @@ const RawScreen10_ChatList: React.FC<Props> = ({
           onPress={() => setActiveTab('chats')}
         >
           <Text style={[styles.tabText, activeTab === 'chats' && styles.tabTextActive]}>
-            Chats ({conversations.length})
+            Chats ({(conversations || []).length})
           </Text>
         </TouchableOpacity>
 
@@ -100,7 +100,7 @@ const RawScreen10_ChatList: React.FC<Props> = ({
 
       {/* Conversations List */}
       <ScrollView contentContainerStyle={styles.listContent}>
-        {conversations.map((item) => (
+        {(conversations || []).map((item) => (
           <TouchableOpacity
             key={item.id}
             onPress={() => onSelectChat && onSelectChat(item)}
@@ -122,6 +122,9 @@ const RawScreen10_ChatList: React.FC<Props> = ({
                     <Text style={Typography.caption}>
                       {formatTime(item.lastMessageAt)}
                     </Text>
+                    <Text style={Typography.bodyBold}>Node {item.participantIds ? item.participantIds.substring(0, 6) : item.id}...</Text>
+                    {/* Placeholder for relation fetching */}
+                    <Text style={Typography.caption}>Just now</Text>
                   </View>
                   
                   <Text

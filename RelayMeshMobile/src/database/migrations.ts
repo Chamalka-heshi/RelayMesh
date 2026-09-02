@@ -2,6 +2,45 @@ import { schemaMigrations, createTable } from '@nozbe/watermelondb/Schema/migrat
 
 export const migrations = schemaMigrations({
   migrations: [
+    // --- NEW: VERSION 3 (MODULE 4 MIGRATIONS) ---
+    {
+      toVersion: 3,
+      steps: [
+        createTable({
+          name: 'mesh_nodes',
+          columns: [
+            { name: 'node_name', type: 'string' },
+            { name: 'dist', type: 'string' },
+            { name: 'role', type: 'string', isIndexed: true },
+            { name: 'rssi', type: 'string' },
+            { name: 'hops', type: 'string' },
+            { name: 'node_type', type: 'string' },
+            { name: 'created_at', type: 'number' },
+          ],
+        }),
+        createTable({
+          name: 'discovered_peers',
+          columns: [
+            { name: 'mac_or_uuid', type: 'string', isIndexed: true },
+            { name: 'device_name', type: 'string' },
+            { name: 'signal_strength', type: 'number' },
+            { name: 'last_seen_at', type: 'number' },
+          ],
+        }),
+        createTable({
+          name: 'packet_queue',
+          columns: [
+            { name: 'sender', type: 'string', isIndexed: true },
+            { name: 'payload', type: 'string' },
+            { name: 'status', type: 'string', isIndexed: true },
+            { name: 'timestamp', type: 'string' },
+            { name: 'created_at', type: 'number' },
+          ],
+        }),
+      ],
+    },
+
+    // --- EXISTING: VERSION 2 ---
     {
       toVersion: 2,
       steps: [

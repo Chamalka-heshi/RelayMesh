@@ -6,7 +6,7 @@ import {
   Image, 
   ImageBackground, 
   StatusBar,
-  TouchableWithoutFeedback // <-- Added this import
+  TouchableWithoutFeedback
 } from 'react-native';
 import { Typography } from '../../../shared';
 
@@ -15,8 +15,6 @@ interface Props {
 }
 
 export const Screen00_Splash: React.FC<Props> = ({ onFinish }) => {
-  // The useEffect timer has been completely removed!
-
   const handleScreenTap = () => {
     if (onFinish) {
       onFinish();
@@ -24,7 +22,6 @@ export const Screen00_Splash: React.FC<Props> = ({ onFinish }) => {
   };
 
   return (
-    // Wrap the entire screen in the touchable area
     <TouchableWithoutFeedback onPress={handleScreenTap}>
       <View style={{ flex: 1 }}>
         <ImageBackground

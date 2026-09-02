@@ -1,18 +1,11 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Header, Card, Colors, Typography } from '../../../shared';
+import React from 'react';
+import { Screen13_EmergencyResourcesDirectory } from './Screen13_EmergencyResourcesDirectory';
 
-export const Screen13_EmergencyContacts: React.FC = () => (
-  <View style={styles.container}>
-    <Header title="Emergency Directory" subtitle="Offline emergency numbers & VHF channels" badge="Member 5" />
-    <Card>
-      <Text style={[Typography.body, { color: Colors.textSecondary }]}>
-        Emergency Directory screen component for Member 5.
-      </Text>
-    </Card>
-  </View>
+interface Props {
+  onSelectResource?: (resourceId: string) => void;
+  onViewMap?: () => void;
+}
+
+export const Screen13_EmergencyContacts: React.FC<Props> = (props) => (
+  <Screen13_EmergencyResourcesDirectory {...props} />
 );
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, padding: 16 },
-});

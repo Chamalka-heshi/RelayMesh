@@ -333,7 +333,7 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
                 onPress={() => {
                   if (p.category === 'hazard') {
                     hazardService.setActiveHazard(p.id);
-                    if (selectedItem?.id === p.id && onNavigateHazard) {
+                    if (onNavigateHazard) {
                       onNavigateHazard(p.id);
                       return;
                     }

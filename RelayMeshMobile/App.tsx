@@ -290,7 +290,7 @@ function MainNavigator() {
       default:
         return (
           <Screen04_HomeDashboard
-            onNavigate={() => {}}
+            onNavigate={() => { }}
             onSOSPress={handleSOSPress}
           />
         );
@@ -327,7 +327,7 @@ function MainNavigator() {
           <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
           <ScreenPill title="Resources (13)" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
           <ScreenPill title="Res Details (14)" active={activeScreen === 'resourceDetail'} onPress={() => setActiveScreen('resourceDetail')} />
-          
+
           {/* Member 4: Added buttons for Screens 16, 17, 18, 19 */}
           <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
           <ScreenPill title="Nearby Nodes (17)" active={activeScreen === 'nearby'} onPress={() => setActiveScreen('nearby')} />

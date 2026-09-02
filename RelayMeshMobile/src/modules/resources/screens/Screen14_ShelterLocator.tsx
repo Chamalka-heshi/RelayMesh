@@ -1,18 +1,15 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Header, Card, Colors, Typography } from '../../../shared';
+import React from 'react';
+import { Screen14_ResourceDetails } from './Screen14_ResourceDetails';
+import { ResourceItem } from '../services/ResourceService';
 
-export const Screen14_ShelterLocator: React.FC = () => (
-  <View style={styles.container}>
-    <Header title="Shelter Locator" subtitle="Verified safety shelters & capacity" badge="Member 5" />
-    <Card>
-      <Text style={[Typography.body, { color: Colors.textSecondary }]}>
-        Shelter Locator screen component for Member 5.
-      </Text>
-    </Card>
-  </View>
+interface Props {
+  resourceId?: string;
+  onBackPress?: () => void;
+  onViewMap?: (resource: ResourceItem) => void;
+  onContact?: (coordinator: string) => void;
+  onBroadcast?: (resource: ResourceItem) => void;
+}
+
+export const Screen14_ShelterLocator: React.FC<Props> = (props) => (
+  <Screen14_ResourceDetails {...props} />
 );
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, padding: 16 },
-});

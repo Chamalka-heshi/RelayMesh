@@ -1,93 +1,94 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Header, Card, Button, StatusBadge, Colors, Typography } from '../../../shared';
+﻿import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { Header, Card, Colors, Typography } from '../../../shared';
+import { MeshService, MeshNode } from '../meshService';
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
-export const Screen16_MeshTopology: React.FC = () => {
+export const Screen16_MeshTopology = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
+  const [nodes, setNodes] = useState<MeshNode[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    fetchTopology();
+  }, []);
+
+  const fetchTopology = async () => {
+    try {
+      const activeNodes = await MeshService.getNearbyNodes();
+      setNodes(activeNodes);
+    } catch (e) {
+      console.warn('Could not load network map:', e);
+      setNodes([]);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchTopology();
+    setRefreshing(false);
+  };
+
+  const totalNodes = nodes.length;
+  const rescueUnits = nodes.filter((n) => n.type === 'rescue').length;
+  const directHops = nodes.filter((n) => n.hops === 'Direct').length;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <Header
-        title="Mesh Network Topology"
-        subtitle="Peer-to-peer radio topology & active routing"
+        title="Network Map"
+        subtitle="Live map of nearby phones connected to you"
       />
 
-      {/* Main Connection Status Card */}
-      <Card variant="accentGreen">
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={[Typography.h2, { color: Colors.primary }]}>Mesh Connected</Text>
-            <Text style={[Typography.caption, { marginTop: 2 }]}>
-              12 nearby devices • 5 active relays
-            </Text>
-          </View>
-          <StatusBadge status="connected" label="Healthy" />
-        </View>
+      <View style={styles.metricsGrid}>
+        <Card style={styles.metricCard}>
+          <Text style={styles.metricValue}>{totalNodes + 1}</Text>
+          <Text style={Typography.caption}>Connected Phones</Text>
+        </Card>
+        <Card style={styles.metricCard}>
+          <Text style={styles.metricValue}>{rescueUnits}</Text>
+          <Text style={Typography.caption}>Rescue Teams</Text>
+        </Card>
+      </View>
 
-        <View style={styles.statsGrid}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Connected Peers</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>5</Text>
-            <Text style={styles.statLabel}>Active Relays</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>-62 dBm</Text>
-            <Text style={styles.statLabel}>Signal (Avg)</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>98.4%</Text>
-            <Text style={styles.statLabel}>Delivery Rate</Text>
-          </View>
-        </View>
-      </Card>
-
-      {/* Visual Node Network Diagram */}
       <Card style={styles.graphCard}>
-        <Text style={[Typography.h3, { marginBottom: 12 }]}>🕸️ Live P2P Routing Graph</Text>
+        <Text style={[Typography.bodyBold, { marginBottom: 12 }]}>Your Network Connection</Text>
         
-        <View style={styles.graphCanvas}>
-          {/* Center User Node */}
-          <View style={[styles.node, styles.userNode, { top: '38%', left: '38%' }]}>
-            <Text style={styles.nodeEmoji}>📱</Text>
-            <Text style={styles.nodeText}>YOU</Text>
+        <View style={styles.centralNodeContainer}>
+          <View style={styles.centralNode}>
+            <Text style={{ fontSize: 24 }}>📱</Text>
           </View>
-
-          {/* Connected Peripheral Nodes */}
-          <View style={[styles.node, { top: '10%', left: '20%' }]}>
-            <Text style={styles.nodeEmoji}>🚤</Text>
-            <Text style={styles.nodeText}>Rescue #04</Text>
-          </View>
-          <View style={[styles.node, { top: '15%', right: '18%' }]}>
-            <Text style={styles.nodeEmoji}>🤝</Text>
-            <Text style={styles.nodeText}>Volunteer</Text>
-          </View>
-          <View style={[styles.node, { bottom: '15%', left: '15%' }]}>
-            <Text style={styles.nodeEmoji}>⛺</Text>
-            <Text style={styles.nodeText}>Shelter-1</Text>
-          </View>
-          <View style={[styles.node, { bottom: '12%', right: '20%' }]}>
-            <Text style={styles.nodeEmoji}>📱</Text>
-            <Text style={styles.nodeText}>Peer #84</Text>
-          </View>
+          <Text style={Typography.bodyBold}>Your Phone</Text>
+          <Text style={Typography.caption}>Ready to send & receive</Text>
         </View>
-        
-        <Text style={[Typography.caption, { textAlign: 'center', marginTop: 8 }]}>
-          Every smartphone acts as a bridge forwarding encrypted packets.
+
+        <View style={styles.dividerLine} />
+
+        <Text style={[Typography.caption, { marginBottom: 8, fontWeight: '700' }]}>
+          PHONES NEARBY ({directHops} Direct)
         </Text>
-      </Card>
 
-      <Card>
-        <Text style={Typography.bodyBold}>Radio Transceivers</Text>
-        <View style={styles.radioRow}>
-          <Text style={Typography.body}>Bluetooth Low Energy (BLE)</Text>
-          <Text style={[Typography.captionBold, { color: Colors.primary }]}>ACTIVE (SCANNING)</Text>
-        </View>
-        <View style={styles.radioRow}>
-          <Text style={Typography.body}>Wi-Fi Direct P2P</Text>
-          <Text style={[Typography.captionBold, { color: Colors.primary }]}>ACTIVE (RELAYING)</Text>
-        </View>
-      </Card>
+        {nodes.map((node) => (
+          <View key={node.id} style={styles.nodeHopRow}>
+            <View style={styles.nodeIcon}>
+              <Text style={{ fontSize: 16 }}>
+                {node.type === 'rescue' ? '🚤' : node.type === 'volunteer' ? '🤝' : '📱'}
+              </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={Typography.bodyBold}>{node.name}</Text>
+              <Text style={Typography.caption}>{node.dist} • {node.rssi}</Text>
+            </View>
+            <View style={styles.linkBadge}>
+              <Text style={styles.linkBadgeText}>Connected</Text>
+            </View>
+          </View>
+        ))}
+      </Card>  
+     <MeshNavigationFooter currentScreen="Screen16" onNavigate={onNavigate} />
     </ScrollView>
   );
 };
@@ -95,16 +96,15 @@ export const Screen16_MeshTopology: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16, paddingBottom: 40 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
-  statBox: { width: '48%', backgroundColor: '#FFFFFF', padding: 10, borderRadius: 10, borderWidth: 1, borderColor: Colors.accentGreenBorder },
-  statNumber: { fontSize: 18, fontWeight: '800', color: Colors.primary },
-  statLabel: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
-  graphCard: { marginVertical: 10 },
-  graphCanvas: { height: 200, backgroundColor: Colors.surfaceSecondary, borderRadius: 12, position: 'relative', overflow: 'hidden' },
-  node: { position: 'absolute', width: 50, height: 50, borderRadius: 25, backgroundColor: Colors.surface, borderWidth: 2, borderColor: Colors.primaryLight, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
-  userNode: { width: 60, height: 60, borderRadius: 30, backgroundColor: Colors.accentGreen, borderColor: Colors.primary, borderWidth: 3 },
-  nodeEmoji: { fontSize: 18 },
-  nodeText: { fontSize: 8, fontWeight: '700', color: Colors.textPrimary, marginTop: 1 },
-  radioRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, paddingVertical: 4 },
+  metricsGrid: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  metricCard: { flex: 1, alignItems: 'center', padding: 16 },
+  metricValue: { fontSize: 28, fontWeight: '800', color: Colors.primary },
+  graphCard: { padding: 16 },
+  centralNodeContainer: { alignItems: 'center', marginVertical: 12 },
+  centralNode: { width: 60, height: 60, borderRadius: 30, backgroundColor: Colors.accentGreen, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  dividerLine: { height: 1, backgroundColor: Colors.borderLight, marginVertical: 16 },
+  nodeHopRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  nodeIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.surfaceSecondary, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  linkBadge: { backgroundColor: '#E6F4EA', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  linkBadgeText: { color: Colors.primary, fontSize: 10, fontWeight: '700' },
 });

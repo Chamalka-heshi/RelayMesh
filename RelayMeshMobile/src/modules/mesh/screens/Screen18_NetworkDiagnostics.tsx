@@ -1,52 +1,131 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Header, Card, Button, StatusBadge, Colors, Typography } from '../../../shared';
+﻿import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { Header, Card, Button, Colors, Typography } from '../../../shared';
+import { MeshService, StoredPacket } from '../meshService';
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
-export const Screen18_NetworkDiagnostics: React.FC = () => {
+export const Screen18_NetworkDiagnostics = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [packets, setPackets] = useState<StoredPacket[]>([]);
+  const [totalForwarded, setTotalForwarded] = useState(182);
+
+  useEffect(() => {
+    loadQueue();
+  }, []);
+
+  const loadQueue = async () => {
+    try {
+      const queue = await MeshService.getQueuedPackets();
+      setPackets(queue);
+    } catch (e) {
+      console.warn('Could not load outbox:', e);
+      setPackets([]);
+    }
+  };
+
+  const handleSimulateNewPacket = async () => {
+    const newPacket: StoredPacket = {
+      id: `pkt_${Date.now()}`,
+      sender: `User_${Math.floor(100 + Math.random() * 900)}`,
+      payload: 'SOS: Need medical supplies nearby',
+      timestamp: new Date().toLocaleTimeString(),
+      status: 'pending',
+    };
+
+    const updatedQueue = await MeshService.addPacketToQueue(newPacket);
+    setPackets(updatedQueue);
+  };
+
+  const handleForceSync = async () => {
+    if (packets.length === 0) {
+      Alert.alert('Outbox Empty', 'There are no pending messages to send.');
+      return;
+    }
+
+    setIsSyncing(true);
+
+    try {
+      const result = await MeshService.syncQueueToCloud();
+
+      if (result.success) {
+        setTotalForwarded((prev) => prev + result.count);
+        setPackets([]);
+        
+        Alert.alert(
+          'Messages Sent!',
+          `${result.count} emergency message(s) successfully uploaded!`
+        );
+      }
+    } catch (error) {
+      Alert.alert('Upload Failed', 'Could not reach the internet server.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
-        title="Store & Forward Status"
-        subtitle="Locally queued data awaiting gateway synchronization"
+        title="Message Outbox"
+        subtitle="Saved messages waiting to be sent"
       />
 
-      <Card variant="accentGreen">
-        <View style={styles.headerRow}>
-          <Text style={[Typography.h3, { color: Colors.primary }]}>Queue Status</Text>
-          <StatusBadge status="syncing" label="Queued for Relay" />
-        </View>
-        <Text style={[Typography.caption, { marginTop: 4 }]}>
-          Your encrypted reports are safely stored on this device and will be forwarded when another node or internet connection is reached.
+      <Card style={{ backgroundColor: '#FCE8E6' }}>
+        <Text style={Typography.bodyBold}>Offline Storage</Text>
+        <Text style={[Typography.caption, { marginTop: 2 }]}>
+          Messages are saved safely on your phone and sent automatically when internet or a rescue team is found.
         </Text>
       </Card>
 
-      <Card>
-        <Text style={Typography.bodyBold}>Queued Data Inventory</Text>
-        <View style={styles.queueItem}>
-          <Text style={Typography.body}>💬 Pending Messages</Text>
-          <Text style={[Typography.bodyBold, { color: Colors.primary }]}>3 items</Text>
-        </View>
-        <View style={styles.queueItem}>
-          <Text style={Typography.body}>🚨 Pending SOS Reports</Text>
-          <Text style={[Typography.bodyBold, { color: Colors.sosRed }]}>1 item</Text>
-        </View>
-        <View style={styles.queueItem}>
-          <Text style={Typography.body}>🗺️ Map Vector Tile Cache</Text>
-          <Text style={Typography.bodyBold}>5 regions (8.4 MB)</Text>
-        </View>
+      <View style={styles.metricsGrid}>
+        <Card style={styles.metricCard}>
+          <Text style={styles.metricValue}>{packets.length}</Text>
+          <Text style={Typography.caption}>Pending Messages</Text>
+        </Card>
+        <Card style={styles.metricCard}>
+          <Text style={styles.metricValue}>{totalForwarded}</Text>
+          <Text style={Typography.caption}>Total Delivered</Text>
+        </Card>
+      </View>
+
+      <Card style={{ marginBottom: 16 }}>
+        <Text style={[Typography.bodyBold, { marginBottom: 8 }]}>Pending Messages</Text>
+        {packets.length === 0 ? (
+          <Text style={Typography.caption}>No pending messages in outbox.</Text>
+        ) : (
+          packets.slice(0, 3).map((pkt) => (
+            <View key={pkt.id} style={styles.packetItem}>
+              <Text style={Typography.bodyBold}>{pkt.sender}</Text>
+              <Text style={Typography.caption}>{pkt.payload} • {pkt.timestamp}</Text>
+            </View>
+          ))
+        )}
       </Card>
 
-      <Card>
-        <Text style={Typography.bodyBold}>Synchronization Timeline</Text>
-        <Text style={[Typography.caption, { marginTop: 4 }]}>
-          1. Stored locally in WatermelonDB ✓{'\n'}
-          2. Encrypted with public key ✓{'\n'}
-          3. Broadcast to mesh relays ✓{'\n'}
-          4. Gateway sync (Waiting for cell tower link) ○
-        </Text>
-      </Card>
+      {isSyncing && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={[Typography.caption, { marginTop: 8 }]}>Uploading saved messages...</Text>
+        </View>
+      )}
 
-      <Button title="FORCE SYNC QUEUED DATA" variant="primary" onPress={() => {}} />
+      <Button
+        title={isSyncing ? "UPLOADING..." : "SEND MESSAGES TO CLOUD NOW"}
+        variant="primary"
+        onPress={handleForceSync}
+        disabled={isSyncing}
+      />
+
+      <View style={{ marginTop: 12 }}>
+        <Button
+          title="+ Test Adding Message"
+          variant="secondary"
+          onPress={handleSimulateNewPacket}
+          disabled={isSyncing}
+        />
+      </View>
+
+      <MeshNavigationFooter currentScreen="Screen18" onNavigate={onNavigate} />
     </ScrollView>
   );
 };
@@ -54,6 +133,9 @@ export const Screen18_NetworkDiagnostics: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16, paddingBottom: 40 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  queueItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  metricsGrid: { flexDirection: 'row', gap: 12, marginVertical: 12 },
+  metricCard: { flex: 1, alignItems: 'center', padding: 16 },
+  metricValue: { fontSize: 28, fontWeight: '800', color: Colors.primary },
+  packetItem: { paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  loadingContainer: { alignItems: 'center', marginVertical: 12 },
 });

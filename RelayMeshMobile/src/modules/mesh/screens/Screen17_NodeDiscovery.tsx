@@ -1,26 +1,81 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+﻿import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
+import { MeshService, MeshNode, StoredPacket } from '../meshService';
+import { HardwareBridge } from '../hardwareBridge'; 
+import { MeshNavigationFooter } from '../components/MeshNavigationFooter';
 
-export const Screen17_NodeDiscovery: React.FC = () => {
-  const nearbyNodes = [
-    { id: '1', name: 'Rescue Team Alpha Unit', dist: '45 m away', role: 'Gateway Node', rssi: '-54 dBm', hops: 'Direct', type: 'rescue' },
-    { id: '2', name: 'Volunteer Group Relay #02', dist: '80 m away', role: 'Relay Enabled', rssi: '-68 dBm', hops: 'Direct', type: 'volunteer' },
-    { id: '3', name: 'Citizen Peer Device #448', dist: '120 m away', role: 'Relay Enabled', rssi: '-76 dBm', hops: '1 Hop', type: 'citizen' },
-    { id: '4', name: 'Community Shelter Base', dist: '350 m away', role: 'Local Hub', rssi: '-82 dBm', hops: '2 Hops', type: 'shelter' },
-  ];
+export const Screen17_NodeDiscovery = ({ onNavigate }: { onNavigate?: (screen: string) => void }) => {
+  const [isScanning, setIsScanning] = useState(false);
+  const [nearbyNodes, setNearbyNodes] = useState<MeshNode[]>([]);
+
+  useEffect(() => {
+    loadNodes();
+    return () => {
+      HardwareBridge.stopPhysicalScan();
+    };
+  }, []);
+
+  const loadNodes = async () => {
+    try {
+      const nodes = await MeshService.getNearbyNodes();
+      setNearbyNodes(nodes);
+    } catch (e) {
+      console.warn('Could not load devices:', e);
+      setNearbyNodes([]);
+    }
+  };
+
+  const handlePhysicalBLEScan = async () => {
+    setIsScanning(true);
+
+    await HardwareBridge.startPhysicalScan(
+      async (discoveredNode: MeshNode) => {
+        await MeshService.addDiscoveredNode(discoveredNode);
+        setNearbyNodes((prev) => {
+          const exists = prev.some((n) => n.id === discoveredNode.id);
+          if (exists) {
+            return prev.map((n) => (n.id === discoveredNode.id ? discoveredNode : n));
+          }
+          return [discoveredNode, ...prev];
+        });
+      },
+      (error) => {
+        Alert.alert('Search Error', error.message);
+        setIsScanning(false);
+      }
+    );
+
+    setTimeout(() => {
+      HardwareBridge.stopPhysicalScan();
+      setIsScanning(false);
+    }, 10000);
+  };
+
+  const handleBroadcastSOS = async () => {
+    const sosPacket: StoredPacket = {
+      id: `sos_${Date.now()}`,
+      sender: 'HostDevice_User',
+      payload: 'CRITICAL: Need immediate help!',
+      timestamp: new Date().toLocaleTimeString(),
+      status: 'pending',
+    };
+
+    await MeshService.addPacketToQueue(sosPacket);
+    Alert.alert('🚨 Distress Call Sent', 'Your help message has been saved and shared with nearby devices.');
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
-        title="Nearby Devices"
-        subtitle="12 peer nodes discovered via BLE & Wi-Fi Direct"
+        title="Search Devices"
+        subtitle={`${nearbyNodes.length} devices found nearby`}
       />
 
-      <Card variant="accentGreen">
-        <Text style={Typography.bodyBold}>Mesh Scanner Active</Text>
+      <Card style={{ backgroundColor: '#E6F4EA', marginBottom: 12 }}>
+        <Text style={Typography.bodyBold}>Bluetooth Device Finder</Text>
         <Text style={[Typography.caption, { marginTop: 2 }]}>
-          Automatically discovering and pairing with nearby RelayMesh smartphones.
+          Uses Bluetooth to find other phones nearby without cellular service.
         </Text>
       </Card>
 
@@ -29,7 +84,7 @@ export const Screen17_NodeDiscovery: React.FC = () => {
           <View style={styles.nodeRow}>
             <View style={styles.avatar}>
               <Text style={{ fontSize: 20 }}>
-                {n.type === 'rescue' ? '🚤' : n.type === 'volunteer' ? '🤝' : n.type === 'shelter' ? '⛺' : '📱'}
+                {n.type === 'rescue' ? '🚤' : n.type === 'volunteer' ? '🤝' : '📱'}
               </Text>
             </View>
             <View style={styles.nodeInfo}>
@@ -44,7 +99,16 @@ export const Screen17_NodeDiscovery: React.FC = () => {
         </Card>
       ))}
 
-      <Button title="SCAN FOR NEW PEER DEVICES" variant="primary" onPress={() => {}} />
+      {isScanning && <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 10 }} />}
+
+      <Button
+        title={isScanning ? "STOPPING SEARCH..." : "FIND NEARBY PHONES (10s)"}
+        variant="secondary"
+        onPress={handlePhysicalBLEScan}
+        disabled={isScanning}
+      />
+
+      <MeshNavigationFooter currentScreen="Screen17" onNavigate={onNavigate} />
     </ScrollView>
   );
 };

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const mySchema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: 'conversations',
@@ -64,5 +64,39 @@ export const mySchema = appSchema({
         { name: 'updated_at', type: 'number' },
       ]
     }),
-  ]
-})
+
+    // --- MODULE 4: HARDWARE BRIDGE & MESH TABLES ---
+    tableSchema({
+      name: 'mesh_nodes',
+      columns: [
+        { name: 'node_name', type: 'string' },
+        { name: 'dist', type: 'string' },
+        { name: 'role', type: 'string', isIndexed: true },
+        { name: 'rssi', type: 'string' },
+        { name: 'hops', type: 'string' },
+        { name: 'node_type', type: 'string' }, // 'rescue' | 'volunteer' | 'citizen' | 'shelter'
+        { name: 'created_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'discovered_peers',
+      columns: [
+        { name: 'mac_or_uuid', type: 'string', isIndexed: true },
+        { name: 'device_name', type: 'string' },
+        { name: 'signal_strength', type: 'number' },
+        { name: 'last_seen_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'packet_queue',
+      columns: [
+        { name: 'sender', type: 'string', isIndexed: true },
+        { name: 'payload', type: 'string' },
+        { name: 'status', type: 'string', isIndexed: true }, // 'pending' | 'relayed' | 'synced'
+        { name: 'timestamp', type: 'string' },
+        { name: 'created_at', type: 'number' },
+      ],
+    }),
+  ],
+});
+  

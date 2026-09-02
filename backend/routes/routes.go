@@ -1,4 +1,4 @@
-﻿package routes
+package routes
 
 import (
 	"relaymesh-backend/controllers"
@@ -20,5 +20,7 @@ func SetupRoutes(r *gin.Engine) {
 	{
 		v1.GET("/health", controllers.HealthCheckHandler)
 		v1.GET("/nodes", controllers.GetSampleNodesHandler)
+		v1.GET("/tiles/bundles", controllers.GetTileBundlesHandler)
+		v1.GET("/tiles/:region/:z/:x/:y", controllers.GetTileHandler)
 	}
 }

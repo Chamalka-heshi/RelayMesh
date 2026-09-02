@@ -1,12 +1,30 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Header, Card, Button, StatusBadge, Colors, Typography } from '../../../shared';
+import { useAuth } from '../../../context';
 
 interface Props {
   onBackPress?: () => void;
 }
 
 export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
+  const { user, profile } = useAuth();
+
+  const getInitials = (name: string) => {
+    if (!name) return 'RM';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const displayName = profile?.fullName || user?.email?.split('@')[0] || 'RelayMesh Responder';
+  const displayRole = profile?.role === 'volunteer' ? 'Volunteer Rescuer' : 'Citizen Responder';
+  const displayNodeId = profile?.nodeId || (user ? `#RM-${user.id.slice(0, 4).toUpperCase()}` : '#RM-4587');
+  const displayEmail = user?.email || profile?.email || 'offline-node@relaymesh.local';
+  const displayPhone = profile?.phone || '+94 77 123 4567';
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
@@ -18,14 +36,17 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
       {/* Avatar Header Box */}
       <View style={styles.avatarSection}>
         <View style={styles.avatarCircle}>
-          <Text style={styles.avatarInitials}>SN</Text>
+          <Text style={styles.avatarInitials}>{getInitials(displayName)}</Text>
         </View>
-        <Text style={[Typography.h1, { marginTop: 10 }]}>Sajura Niman</Text>
+        <Text style={[Typography.h1, { marginTop: 10 }]}>{displayName}</Text>
         <Text style={[Typography.caption, { color: Colors.textSecondary }]}>
-          Citizen Responder • Node ID: #RM-4587
+          {displayRole} • Node ID: {displayNodeId}
         </Text>
         <View style={{ marginTop: 6 }}>
-          <StatusBadge status="connected" label="Active Relay Node" />
+          <StatusBadge
+            status={user ? 'connected' : 'offline'}
+            label={user ? 'Supabase Auth Verified' : 'Local Standalone Node'}
+          />
         </View>
       </View>
 
@@ -33,16 +54,24 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
       <Card>
         <Text style={Typography.bodyBold}>Emergency Identification</Text>
         <View style={styles.infoRow}>
+          <Text style={Typography.body}>Account Email</Text>
+          <Text style={Typography.bodyBold}>{displayEmail}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={Typography.body}>Registered Phone</Text>
+          <Text style={Typography.bodyBold}>{displayPhone}</Text>
+        </View>
+        <View style={styles.infoRow}>
           <Text style={Typography.body}>Blood Group</Text>
-          <Text style={Typography.bodyBold}>O+ Positive</Text>
+          <Text style={Typography.bodyBold}>{profile?.bloodGroup || 'O+ Positive'}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={Typography.body}>Medical Notes</Text>
-          <Text style={Typography.bodyBold}>Asthma (Inhaler with user)</Text>
+          <Text style={Typography.bodyBold}>{profile?.medicalNotes || 'None specified'}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={Typography.body}>Emergency Next of Kin</Text>
-          <Text style={Typography.bodyBold}>+94 77 123 4567 (Father)</Text>
+          <Text style={Typography.body}>Emergency Contact</Text>
+          <Text style={Typography.bodyBold}>{profile?.emergencyContact || '+94 77 123 4567'}</Text>
         </View>
       </Card>
 
@@ -61,7 +90,9 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
         </View>
         <View style={styles.infoRow}>
           <Text style={Typography.body}>Encryption Key Fingerprint</Text>
-          <Text style={[Typography.caption, { fontWeight: '700' }]}>SHA256: 4A:9F:88:E2:...</Text>
+          <Text style={[Typography.caption, { fontWeight: '700' }]}>
+            {user ? `UID:${user.id.slice(0, 16)}...` : 'SHA256: 4A:9F:88:E2:...'}
+          </Text>
         </View>
       </Card>
 

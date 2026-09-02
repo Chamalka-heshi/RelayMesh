@@ -1,6 +1,7 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Header, Card, Colors, Typography } from '../../../shared';
+import { useAuth } from '../../../context';
 
 interface Props {
   onNavigateProfile?: () => void;
@@ -11,15 +12,46 @@ export const Screen20_AppSettings: React.FC<Props> = ({
   onNavigateProfile,
   onLogout,
 }) => {
+  const { user, profile, signOut } = useAuth();
+
+  const getInitials = (name: string) => {
+    if (!name) return 'RM';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const displayName = profile?.fullName || user?.email?.split('@')[0] || 'Sajura Niman';
+  const displayRole = profile?.role === 'volunteer' ? 'Volunteer Rescuer' : 'Citizen';
+  const displayNodeId = profile?.nodeId || (user ? `#RM-${user.id.slice(0, 4).toUpperCase()}` : '#RM-4587');
+
+  const handleLogout = () => {
+    Alert.alert('Log Out', 'Are you sure you want to log out of your Supabase account?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Log Out',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+          if (onLogout) {
+            onLogout();
+          }
+        },
+      },
+    ]);
+  };
+
   const settingsList = [
-    { id: 'profile', icon: '👤', title: 'User Profile & Emergency Card', sub: 'Name, medical info, next of kin', action: onNavigateProfile },
-    { id: 'device', icon: '📱', title: 'Device & Hardware Identity', sub: 'Device ID: #RM-4587, battery health' },
+    { id: 'profile', icon: '👤', title: 'User Profile & Emergency Card', sub: `${displayName} • ${displayRole}`, action: onNavigateProfile },
+    { id: 'device', icon: '📱', title: 'Device & Hardware Identity', sub: `Device Node: ${displayNodeId}` },
     { id: 'network', icon: '📶', title: 'Mesh & Radio Settings', sub: 'Bluetooth, Wi-Fi Direct, Background Relay' },
     { id: 'storage', icon: '💾', title: 'Data & Offline Storage', sub: 'Cached maps: 8.4 MB, message logs' },
     { id: 'privacy', icon: '🔒', title: 'Privacy & Security', sub: 'End-to-end encryption keys' },
     { id: 'notifications', icon: '🔔', title: 'Emergency Sound & Haptics', sub: 'High-pitch SOS strobe alerts' },
     { id: 'help', icon: '❓', title: 'Help & Emergency Quick Guide', sub: 'Offline disaster handbook & FAQs' },
-    { id: 'about', icon: 'ℹ️', title: 'About RelayMesh', sub: 'Version 1.0.0 (Nova Innovation Edition)' },
+    { id: 'about', icon: 'ℹ️', title: 'About RelayMesh', sub: 'Version 1.0.0 (Supabase Auth Edition)' },
   ];
 
   return (
@@ -31,13 +63,15 @@ export const Screen20_AppSettings: React.FC<Props> = ({
         <Card variant="accentGreen" style={styles.userCard}>
           <View style={styles.userRow}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>SN</Text>
+              <Text style={styles.avatarText}>{getInitials(displayName)}</Text>
             </View>
             <View style={styles.userInfo}>
-              <Text style={Typography.h3}>Sajura Niman</Text>
-              <Text style={Typography.caption}>Role: Citizen • ID: #RM-4587</Text>
+              <Text style={Typography.h3}>{displayName}</Text>
+              <Text style={Typography.caption}>
+                Role: {displayRole} • ID: {displayNodeId}
+              </Text>
               <Text style={[Typography.caption, { color: Colors.primary, fontWeight: '600', marginTop: 2 }]}>
-                ● Relay Forwarding Active
+                {user ? '● Supabase Connected' : '● Local Relay Active'}
               </Text>
             </View>
             <Text style={styles.chevron}>➔</Text>
@@ -69,7 +103,7 @@ export const Screen20_AppSettings: React.FC<Props> = ({
       {/* Log out / Reset button */}
       <TouchableOpacity
         style={styles.logoutBtn}
-        onPress={onLogout}
+        onPress={handleLogout}
         activeOpacity={0.7}
       >
         <Text style={styles.logoutText}>🚪 Log Out / Clear Session</Text>

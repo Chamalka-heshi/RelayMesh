@@ -10,6 +10,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+
+	"relaymesh-backend/controllers"
 )
 
 type SOSPayload struct {
@@ -45,6 +47,11 @@ func initDB() {
 
 func main() {
 	initDB()
+
+	// Initialize Module 2 PostGIS spatial hazards table
+	if err := controllers.InitHazardTable(db); err != nil {
+		log.Printf("⚠️ Warning: Failed to init hazards table: %v\n", err)
+	}
 
 	r := gin.Default()
 	r.Use(cors.Default())
@@ -120,6 +127,13 @@ func main() {
 		}
 		c.JSON(http.StatusOK, alerts)
 	})
+
+	// Module 2: Spatial Vector Mapping & Hazard Reporting Endpoints
+	r.POST("/api/hazards", controllers.CreateHazardHandler(db))
+	r.GET("/api/hazards", controllers.GetHazardsHandler(db))
+	r.POST("/api/hazards/:id/resolve", controllers.ResolveHazardHandler(db))
+	r.GET("/api/tiles/bundles", controllers.GetTileBundlesHandler)
+	r.GET("/api/tiles/:region/:z/:x/:y", controllers.GetTileHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {

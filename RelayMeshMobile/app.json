@@ -4,6 +4,7 @@
     "slug": "relaymesh-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "relaymesh",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -17,8 +18,7 @@
         {
           "isBackgroundEnabled": true,
           "modes": ["peripheral", "central"],
-          "bluetoothAlwaysPermission": "Allow RelayMesh to connect to offline peers.",
-          "bluetoothPeripheralPermission": "Allow RelayMesh to broadcast to offline peers."
+          "bluetoothAlwaysPermission": "Allow RelayMesh to connect to offline peers."
         }
       ]
     ]

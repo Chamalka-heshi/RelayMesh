@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons'; // <-- Added Feather icons
 import { Card, StatusBadge, Colors, Typography } from '../../../shared';
 
 interface Props {
@@ -23,7 +24,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
       <View style={styles.topGreenCard}>
         <View style={styles.topRow}>
           <View style={styles.brandGroup}>
-            <Text style={styles.brandIcon}>📡</Text>
+            <Feather name="radio" size={26} color="#FFFFFF" style={styles.brandIcon} />
             <View>
               <Text style={styles.brandTitle}>RelayMesh</Text>
               <Text style={styles.brandSubtitle}>Offline P2P Mesh Network</Text>
@@ -72,26 +73,6 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
         </View>
       </Card>
 
-      {/* Prominent SOS Action Banner */}
-      <TouchableOpacity
-        style={styles.sosBanner}
-        onPress={onSOSPress}
-        activeOpacity={0.85}
-      >
-        <View style={styles.sosBannerLeft}>
-          <View style={styles.sosMiniCircle}>
-            <Text style={styles.sosMiniText}>SOS</Text>
-          </View>
-          <View style={styles.sosTextCol}>
-            <Text style={styles.sosBannerTitle}>Emergency SOS Distress</Text>
-            <Text style={styles.sosBannerSub}>
-              One-tap broadcast to rescue teams & nearby nodes
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.sosChevron}>➔</Text>
-      </TouchableOpacity>
-
       {/* Quick Action Grid (6 Modules) */}
       <Text style={[Typography.h3, styles.sectionTitle]}>Quick Navigation</Text>
 
@@ -103,7 +84,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: '#E8F5EC' }]}>
-            <Text style={styles.gridIcon}>🗺️</Text>
+            <Feather name="map" size={20} color={Colors.primary} />
           </View>
           <Text style={Typography.bodyBold}>Offline Map</Text>
           <Text style={Typography.caption}>Shelters & Water</Text>
@@ -116,7 +97,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: Colors.sosRedLight }]}>
-            <Text style={styles.gridIcon}>🚨</Text>
+            <Feather name="alert-triangle" size={20} color={Colors.sosRed} />
           </View>
           <Text style={[Typography.bodyBold, { color: Colors.sosRed }]}>SOS Alert</Text>
           <Text style={Typography.caption}>Distress Beacon</Text>
@@ -129,7 +110,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: '#DBEAFE' }]}>
-            <Text style={styles.gridIcon}>💬</Text>
+            <Feather name="message-square" size={20} color="#2563EB" />
           </View>
           <Text style={Typography.bodyBold}>Messages</Text>
           <Text style={Typography.caption}>P2P Mesh Chat</Text>
@@ -142,7 +123,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: '#FFEDD5' }]}>
-            <Text style={styles.gridIcon}>📦</Text>
+            <Feather name="package" size={20} color="#EA580C" />
           </View>
           <Text style={Typography.bodyBold}>Relief Directory</Text>
           <Text style={Typography.caption}>Food & Medical</Text>
@@ -155,7 +136,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: '#E8F5EC' }]}>
-            <Text style={styles.gridIcon}>🕸️</Text>
+            <Feather name="share-2" size={20} color={Colors.primary} />
           </View>
           <Text style={Typography.bodyBold}>Mesh Topology</Text>
           <Text style={Typography.caption}>12 Active Peers</Text>
@@ -168,7 +149,7 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: Colors.surfaceSecondary }]}>
-            <Text style={styles.gridIcon}>⚙️</Text>
+            <Feather name="settings" size={20} color="#64748B" />
           </View>
           <Text style={Typography.bodyBold}>Settings</Text>
           <Text style={Typography.caption}>Radio & Storage</Text>
@@ -178,12 +159,15 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
       {/* Recent Hazard / Emergency Broadcast Banner */}
       <Card style={styles.alertCard}>
         <View style={styles.alertHeader}>
-          <Text style={[Typography.bodyBold, { color: Colors.warning }]}>
-            ⚠️ Flood Hazard Warning
-          </Text>
+          <View style={styles.alertTitleGroup}>
+            <Feather name="alert-triangle" size={16} color={Colors.warning} />
+            <Text style={[Typography.bodyBold, { color: Colors.warning, marginLeft: 6 }]}>
+              Flood Hazard Warning
+            </Text>
+          </View>
           <Text style={Typography.caption}>12 mins ago</Text>
         </View>
-        <Text style={[Typography.caption, { marginTop: 4 }]}>
+        <Text style={[Typography.caption, { marginTop: 6 }]}>
           Sector 2 bridge road is flooded (1.5m depth). Safe bypass route via Hill Road is active on offline map.
         </Text>
       </Card>
@@ -216,7 +200,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   brandIcon: {
-    fontSize: 28,
     marginRight: 10,
   },
   brandTitle: {
@@ -273,69 +256,21 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 2,
   },
-  sosBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.sosRedLight,
-    borderColor: Colors.sosRedBorder,
-    borderWidth: 1.5,
-    borderRadius: 16,
-    padding: 12,
-    marginVertical: 10,
-  },
-  sosBannerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  sosMiniCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.sosRed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  sosMiniText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 11,
-  },
-  sosTextCol: {
-    flex: 1,
-  },
-  sosBannerTitle: {
-    color: Colors.sosRed,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  sosBannerSub: {
-    color: Colors.textSecondary,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  sosChevron: {
-    color: Colors.sosRed,
-    fontSize: 18,
-    fontWeight: '800',
-    marginLeft: 8,
-  },
   sectionTitle: {
-    marginVertical: 8,
+    marginVertical: 12,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginVertical: 4,
+    justifyContent: 'space-between', // Ensures cards sit at the edges perfectly
+    marginBottom: 12,
   },
   gridCard: {
-    width: '48%',
+    width: '48%', // 48% width allows for a clean 2-column layout
     backgroundColor: Colors.surface,
     borderRadius: 14,
     padding: 14,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: '#000',
@@ -350,19 +285,20 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
-  },
-  gridIcon: {
-    fontSize: 18,
+    marginBottom: 12,
   },
   alertCard: {
-    marginVertical: 10,
+    marginVertical: 4,
     borderLeftWidth: 4,
     borderLeftColor: Colors.warning,
   },
   alertHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  alertTitleGroup: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
 });

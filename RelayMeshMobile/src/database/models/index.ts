@@ -1,6 +1,9 @@
-﻿import { NodeSchema, MessageSchema, SosAlertSchema, ResourceSchema } from '../schema';
+import Conversation from '../Conversation';
+import Message from '../Message';
+import EncryptionKey from '../EncryptionKey';
 
-export type MeshNodeModel = NodeSchema;
-export type MessageModel = MessageSchema;
-export type SosAlertModel = SosAlertSchema;
-export type ResourceModel = ResourceSchema;
+export { Conversation, Message, EncryptionKey };
+
+export type ConversationModel = Conversation;
+export type MessageModel = Message;
+export type EncryptionKeyModel = EncryptionKey;

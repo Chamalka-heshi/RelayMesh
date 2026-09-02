@@ -1,8 +1,24 @@
+import { NativeModules, Platform } from 'react-native';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import { mySchema } from './schema'; 
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import { mySchema } from './schema';
 
-export const dbAdapter = new SQLiteAdapter({
-  schema: mySchema, // Point to the correct variable name here
-  jsi: false, 
-  onSetUpError: (error) => console.error("WatermelonDB setup error:", error)
-});
+const createAdapter = () => {
+  // Use native SQLiteAdapter only if native bridge is linked
+  if (Platform.OS !== 'web' && NativeModules?.WMDatabaseBridge) {
+    return new SQLiteAdapter({
+      schema: mySchema,
+      jsi: false,
+      onSetUpError: (error) => console.warn('WatermelonDB SQLite setup warning:', error),
+    });
+  }
+
+  // Gracefully fallback to LokiJS in Expo Go, Simulator, and Web environments
+  return new LokiJSAdapter({
+    schema: mySchema,
+    useWebWorker: false,
+    useIncrementalIndexedDB: true,
+  });
+};
+
+export const dbAdapter = createAdapter();

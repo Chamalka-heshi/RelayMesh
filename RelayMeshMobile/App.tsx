@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  View,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, BottomNav, TabName } from './src/shared';
+import { seedInitialData } from './src/database';
+import Conversation from './src/database/Conversation';
+import { AuthProvider, useAuth } from './src/context';
 
 // Member 1: SOS Screens
 import {
@@ -47,10 +50,13 @@ import {
   Screen02_ResourceDirectory,
   Screen03_ResourceDetails,
   Screen04_HomeDashboard,
+  Screen13_EmergencyResourcesDirectory,
+  Screen14_ResourceDetails,
   Screen20_AppSettings,
   Screen23_UserProfile,
   Screen24_Login,
   Screen25_Register,
+  resourceService,
 } from './src/modules/resources';
 
 type ScreenId =
@@ -78,11 +84,19 @@ type ScreenId =
   | 'settings'
   | 'profile';
 
-export default function App() {
+function MainNavigator() {
+  const { user, loading } = useAuth();
   const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
   const [activeTab, setActiveTab] = useState<TabName>('home');
-  const [selectedChat, setSelectedChat] = useState('Rescue Team Alpha');
+  
+  // Combined state variables from both branches
+  const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
+  const [selectedResourceId, setSelectedResourceId] = useState<string>('res-shelter-1');
   const [showScreenPicker, setShowScreenPicker] = useState(false);
+
+  useEffect(() => {
+    seedInitialData();
+  }, []);
 
   // Tab switcher
   const handleTabPress = (tab: TabName) => {
@@ -112,20 +126,26 @@ export default function App() {
     switch (activeScreen) {
       // Member 5: Auth & Home
       case 'splash':
-        return <Screen00_Splash onFinish={() => setActiveScreen('onboarding')} />;
+        return <Screen00_Splash onFinish={() => setActiveScreen(user ? 'home' : 'onboarding')} />;
       case 'onboarding':
-        return <Screen01_Onboarding onComplete={() => setActiveScreen('home')} />;
+        return <Screen01_Onboarding onComplete={() => setActiveScreen(user ? 'home' : 'login')} />;
       case 'login':
         return (
           <Screen24_Login
-            onLoginSuccess={() => setActiveScreen('home')}
+            onLoginSuccess={() => {
+              setActiveTab('home');
+              setActiveScreen('home');
+            }}
             onNavigateRegister={() => setActiveScreen('register')}
           />
         );
       case 'register':
         return (
           <Screen25_Register
-            onRegisterSuccess={() => setActiveScreen('home')}
+            onRegisterSuccess={() => {
+              setActiveTab('home');
+              setActiveScreen('home');
+            }}
             onNavigateLogin={() => setActiveScreen('login')}
           />
         );
@@ -133,9 +153,9 @@ export default function App() {
         return (
           <Screen04_HomeDashboard
             onNavigate={(dest) => {
-              if (dest === 'map') setActiveScreen('map');
-              else if (dest === 'messages') setActiveScreen('messages');
-              else if (dest === 'resources') setActiveScreen('resources');
+              if (dest === 'map') { setActiveTab('map'); setActiveScreen('map'); }
+              else if (dest === 'messages') { setActiveTab('messages'); setActiveScreen('messages'); }
+              else if (dest === 'resources') { setActiveTab('resources'); setActiveScreen('resources'); }
               else if (dest === 'mesh') setActiveScreen('mesh');
               else if (dest === 'settings') setActiveScreen('settings');
               else if (dest === 'profile') setActiveScreen('profile');
@@ -155,7 +175,7 @@ export default function App() {
       case 'sosAlert':
         return (
           <Screen07_SOSAlert
-            onViewMap={() => setActiveScreen('map')}
+            onViewMap={() => { setActiveTab('map'); setActiveScreen('map'); }}
             onCancelSOS={() => setActiveScreen('home')}
           />
         );
@@ -168,7 +188,14 @@ export default function App() {
       case 'map':
         return (
           <Screen05_OfflineMap
-            onSelectResource={(res) => setActiveScreen('resourceDetail')}
+            onSelectResource={(resName) => {
+              const found = resourceService.getResourceByName(resName);
+              if (found) {
+                setSelectedResourceId(found.id);
+                resourceService.setSelectedResource(found.id);
+              }
+              setActiveScreen('resourceDetail');
+            }}
             onFilterPress={() => setActiveScreen('mapFilter')}
             onNavigateHazard={(hzId) => setActiveScreen('routeNav')}
           />
@@ -192,18 +219,20 @@ export default function App() {
       case 'messages':
         return (
           <Screen10_ChatList
-            onSelectChat={(name: string) => {
-              setSelectedChat(name);
+            onSelectChat={(conversation: Conversation) => {
+              setSelectedChat(conversation);
               setActiveScreen('directChat');
             }}
             onNewMessage={() => setActiveScreen('broadcast')}
           />
         );
       case 'directChat':
+        if (!selectedChat) return <Screen10_ChatList onSelectChat={() => {}} />;
+
         return (
           <Screen11_DirectChat
-            chatName={selectedChat}
-            onBackPress={() => setActiveScreen('messages')}
+            conversation={selectedChat}
+            onBack={() => setActiveScreen('messages')}
           />
         );
       case 'broadcast':
@@ -238,21 +267,45 @@ export default function App() {
       // Member 5: Resources & Profile
       case 'resources':
         return (
-          <Screen02_ResourceDirectory
-            onSelectResource={() => setActiveScreen('resourceDetail')}
+          <Screen13_EmergencyResourcesDirectory
+            onSelectResource={(id) => {
+              setSelectedResourceId(id);
+              resourceService.setSelectedResource(id);
+              setActiveScreen('resourceDetail');
+            }}
+            onViewMap={() => {
+              setActiveTab('map');
+              setActiveScreen('map');
+            }}
           />
         );
       case 'resourceDetail':
         return (
-          <Screen03_ResourceDetails
+          <Screen14_ResourceDetails
+            resourceId={selectedResourceId}
             onBackPress={() => setActiveScreen('resources')}
+            onViewMap={(res) => {
+              setActiveTab('map');
+              setActiveScreen('map');
+            }}
+            onContact={(coordinator) => {
+              // Cast to 'any' because another team member passes a string here, 
+              // but your chat system correctly expects a Conversation object.
+              setSelectedChat(coordinator as any);
+              setActiveScreen('directChat');
+            }}
+            onBroadcast={(res) => {
+              setActiveScreen('broadcast');
+            }}
           />
         );
       case 'settings':
         return (
           <Screen20_AppSettings
             onNavigateProfile={() => setActiveScreen('profile')}
-            onLogout={() => setActiveScreen('login')}
+            onLogout={() => {
+              setActiveScreen('login');
+            }}
           />
         );
       case 'profile':
@@ -265,14 +318,14 @@ export default function App() {
       default:
         return (
           <Screen04_HomeDashboard
-            onNavigate={() => {}}
+            onNavigate={() => { }}
             onSOSPress={handleSOSPress}
           />
         );
     }
   };
 
-  // Hide BottomNav on full-screen flows (Splash, Onboarding, Login, Register, Direct Chat)
+  // Hide BottomNav on full-screen flows
   const isFullScreen =
     activeScreen === 'splash' ||
     activeScreen === 'onboarding' ||
@@ -300,9 +353,9 @@ export default function App() {
           <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
           <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
           <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
-          <ScreenPill title="Resources" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
-          
-          {/* Member 4: Added buttons for Screens 16, 17, 18, 19 */}
+          <ScreenPill title="Resources (13)" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
+          <ScreenPill title="Res Details (14)" active={activeScreen === 'resourceDetail'} onPress={() => setActiveScreen('resourceDetail')} />
+
           <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
           <ScreenPill title="Nearby Nodes (17)" active={activeScreen === 'nearby'} onPress={() => setActiveScreen('nearby')} />
           <ScreenPill title="Store & Forward (18)" active={activeScreen === 'storeForward'} onPress={() => setActiveScreen('storeForward')} />
@@ -316,7 +369,7 @@ export default function App() {
       {/* Active Screen View */}
       <View style={styles.screenContainer}>{renderScreen()}</View>
 
-      {/* Persistent Bottom Navigation with Center Floating SOS Button */}
+      {/* Persistent Bottom Navigation */}
       {!isFullScreen && (
         <BottomNav
           activeTab={activeTab}
@@ -325,6 +378,14 @@ export default function App() {
         />
       )}
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainNavigator />
+    </AuthProvider>
   );
 }
 

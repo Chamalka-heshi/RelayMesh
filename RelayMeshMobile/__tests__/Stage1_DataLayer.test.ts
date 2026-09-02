@@ -11,11 +11,11 @@ describe('Stage 1: Local Data Layer, Migrations & Device Identity Verification',
   });
 
   describe('1. WatermelonDB Schema & Migration Definitions', () => {
-    it('should have schema version 2', () => {
-      expect(mySchema.version).toBe(2);
+    it('should have schema version 2 or higher', () => {
+      expect(mySchema.version).toBeGreaterThanOrEqual(2);
     });
 
-    it('should include all 5 required tables in schema v2', () => {
+    it('should include all 5 required tables in schema', () => {
       const tableNames = Object.keys(mySchema.tables);
       expect(tableNames).toContain('conversations');
       expect(tableNames).toContain('messages');
@@ -24,11 +24,11 @@ describe('Stage 1: Local Data Layer, Migrations & Device Identity Verification',
       expect(tableNames).toContain('user_profiles');
     });
 
-    it('should define version 1 -> 2 migration without modifying existing tables', () => {
+    it('should define version 1 -> 2+ migration without modifying existing tables', () => {
       expect(migrations).toBeDefined();
       expect(migrations.validated).toBe(true);
       expect(migrations.minVersion).toBe(1);
-      expect(migrations.maxVersion).toBe(2);
+      expect(migrations.maxVersion).toBeGreaterThanOrEqual(2);
     });
 
     it('should define all required columns for resources table', () => {

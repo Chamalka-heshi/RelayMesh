@@ -1,15 +1,18 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Header, Card, Button, Colors, Typography } from '../../../shared';
-import { MeshService, MeshNode } from '../meshService';
+import { MeshService, MeshNode, StoredPacket } from '../meshService';
+import { HardwareBridge } from '../hardwareBridge'; 
 
 export const Screen17_NodeDiscovery: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [nearbyNodes, setNearbyNodes] = useState<MeshNode[]>([]);
 
-  // Load stored nodes from MeshService on mount
   useEffect(() => {
     loadNodes();
+    return () => {
+      HardwareBridge.stopPhysicalScan();
+    };
   }, []);
 
   const loadNodes = async () => {
@@ -17,42 +20,71 @@ export const Screen17_NodeDiscovery: React.FC = () => {
     setNearbyNodes(nodes);
   };
 
-  const handleScan = async () => {
+  const handlePhysicalBLEScan = async () => {
     setIsScanning(true);
-    
-    // Simulate BLE discovery delay
-    setTimeout(async () => {
-      const mockTypes: ('citizen' | 'volunteer' | 'rescue')[] = ['citizen', 'volunteer', 'rescue'];
-      const randomType = mockTypes[Math.floor(Math.random() * mockTypes.length)];
-      
-      const newNode: MeshNode = {
-        id: Date.now().toString(),
-        name: `Discovered Peer #${Math.floor(100 + Math.random() * 900)}`,
-        dist: `${Math.floor(15 + Math.random() * 80)} m away`,
-        role: 'Relay Enabled',
-        rssi: `-${Math.floor(45 + Math.random() * 40)} dBm`,
-        hops: 'Direct',
-        type: randomType,
-      };
 
-      // Save node through local service
-      const updatedList = await MeshService.addDiscoveredNode(newNode);
-      setNearbyNodes(updatedList);
+    await HardwareBridge.startPhysicalScan(
+      async (discoveredNode: MeshNode) => {
+        // Save to storage
+        await MeshService.addDiscoveredNode(discoveredNode);
+
+        // Update local screen state without duplicate IDs
+        setNearbyNodes((prev) => {
+          const exists = prev.some((n) => n.id === discoveredNode.id);
+          if (exists) {
+            return prev.map((n) => (n.id === discoveredNode.id ? discoveredNode : n));
+          }
+          return [discoveredNode, ...prev];
+        });
+      },
+      (error) => {
+        Alert.alert('BLE Scan Error', error.message);
+        setIsScanning(false);
+      }
+    );
+
+    setTimeout(() => {
+      HardwareBridge.stopPhysicalScan();
       setIsScanning(false);
-    }, 1200);
+    }, 10000);
+  };
+
+  const handleBroadcastSOS = async () => {
+    const sosPacket: StoredPacket = {
+      id: `sos_${Date.now()}`,
+      sender: 'HostDevice_User',
+      payload: 'CRITICAL: Rising floodwaters - Immediate evacuation needed!',
+      timestamp: new Date().toLocaleTimeString(),
+      status: 'pending',
+    };
+
+    // Ensure you await this call
+    const updatedQueue = await MeshService.addPacketToQueue(sosPacket);
+    console.log('[DEBUG Screen 17] Queue length after insert:', updatedQueue.length);
+
+    await MeshService.addPacketToQueue(sosPacket);
+    Alert.alert('🚨 SOS Broadcasted', 'Message staged in local store-and-forward queue.');
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Header
         title="Nearby Devices"
-        subtitle={`${nearbyNodes.length} peer nodes active in mesh storage`}
+        subtitle={`${nearbyNodes.length} hardware nodes registered`}
       />
 
-      <Card style={{ backgroundColor: '#E6F4EA' }}>
-        <Text style={Typography.bodyBold}>Mesh Scanner Active</Text>
+      <Card style={{ backgroundColor: '#FCE8E6', borderColor: '#F5C6CB', borderWidth: 1, marginBottom: 12 }}>
+        <Text style={[Typography.bodyBold, { color: '#721C24' }]}>Emergency Broadcast</Text>
+        <Text style={[Typography.caption, { color: '#721C24', marginVertical: 4 }]}>
+          Broadcast emergency alert into local store-and-forward queue.
+        </Text>
+        <Button title="🚨 BROADCAST EMERGENCY SOS" variant="primary" onPress={handleBroadcastSOS} />
+      </Card>
+
+      <Card style={{ backgroundColor: '#E6F4EA', marginBottom: 12 }}>
+        <Text style={Typography.bodyBold}>Native BLE Radio Bridge</Text>
         <Text style={[Typography.caption, { marginTop: 2 }]}>
-          Automatically discovering and pairing with nearby RelayMesh smartphones.
+          Scans physical 2.4GHz Bluetooth Spectrum for nearby active smartphones.
         </Text>
       </Card>
 
@@ -61,7 +93,7 @@ export const Screen17_NodeDiscovery: React.FC = () => {
           <View style={styles.nodeRow}>
             <View style={styles.avatar}>
               <Text style={{ fontSize: 20 }}>
-                {n.type === 'rescue' ? '🚤' : n.type === 'volunteer' ? '🤝' : n.type === 'shelter' ? '⛺' : '📱'}
+                {n.type === 'rescue' ? '🚤' : n.type === 'volunteer' ? '🤝' : '📱'}
               </Text>
             </View>
             <View style={styles.nodeInfo}>
@@ -79,9 +111,9 @@ export const Screen17_NodeDiscovery: React.FC = () => {
       {isScanning && <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 10 }} />}
 
       <Button
-        title={isScanning ? "SCANNING BLE RADIOS..." : "SCAN FOR NEW PEER DEVICES"}
-        variant="primary"
-        onPress={handleScan}
+        title={isScanning ? "STOPPING BLE RADIO..." : "SCAN PHYSICAL BLE RADIOS (10s)"}
+        variant="secondary"
+        onPress={handlePhysicalBLEScan}
         disabled={isScanning}
       />
     </ScrollView>

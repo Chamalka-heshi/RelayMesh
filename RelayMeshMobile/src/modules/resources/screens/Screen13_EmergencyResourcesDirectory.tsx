@@ -114,8 +114,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
     <View style={styles.container}>
       <Header
         title="Emergency Resources"
-        subtitle="Screen 13 • Verified offline shelter, water & triage directory"
-        badge="Screen 13"
+        subtitle="Verified offline shelter, water & triage directory"
         rightAction={
           onViewMap ? (
             <TouchableOpacity
@@ -395,7 +394,7 @@ export const Screen13_EmergencyResourcesDirectory: React.FC<Props> = ({
               <Text style={styles.mapBannerIcon}>🗺️</Text>
               <View>
                 <Text style={styles.mapBannerTitle}>
-                  View All Resources on Offline Map (Screen 05)
+                  View All Resources on Offline Map
                 </Text>
                 <Text style={styles.mapBannerSubtitle}>
                   Visualize GPS coordinates, safe walking detours & shelter locations

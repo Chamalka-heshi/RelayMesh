@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Card, StatusBadge, Colors, Typography } from '../../../shared';
 import { useAuth } from '../../../context';
+import { sosService, SOSAlert } from '../../sos';
 
 interface Props {
   onNavigate: (screen: string) => void;
@@ -19,6 +20,14 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
   onSOSPress,
 }) => {
   const { user, profile } = useAuth();
+  const [activeSOS, setActiveSOS] = useState<SOSAlert | null>(sosService.getActiveSOS());
+
+  useEffect(() => {
+    const unsubscribe = sosService.subscribe((alert) => {
+      setActiveSOS(alert);
+    });
+    return unsubscribe;
+  }, []);
 
   const getInitials = (name?: string) => {
     if (!name) return 'RM';
@@ -106,18 +115,37 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
 
       {/* Prominent SOS Action Banner */}
       <TouchableOpacity
-        style={styles.sosBanner}
+        style={[
+          styles.sosBanner,
+          activeSOS && { backgroundColor: Colors.sosRed, borderColor: '#FFFFFF', borderWidth: 1 },
+        ]}
         onPress={onSOSPress}
         activeOpacity={0.85}
       >
         <View style={styles.sosBannerLeft}>
-          <View style={styles.sosMiniCircle}>
-            <Text style={styles.sosMiniText}>SOS</Text>
+          <View
+            style={[
+              styles.sosMiniCircle,
+              activeSOS && { backgroundColor: '#FFFFFF' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.sosMiniText,
+                activeSOS && { color: Colors.sosRed, fontWeight: '900' },
+              ]}
+            >
+              {activeSOS ? '🚨' : 'SOS'}
+            </Text>
           </View>
           <View style={styles.sosTextCol}>
-            <Text style={styles.sosBannerTitle}>Emergency SOS Distress</Text>
+            <Text style={styles.sosBannerTitle}>
+              {activeSOS ? `ACTIVE SOS: ${activeSOS.id}` : 'Emergency SOS Distress'}
+            </Text>
             <Text style={styles.sosBannerSub}>
-              One-tap broadcast to rescue teams & nearby nodes
+              {activeSOS
+                ? `Distress beacon active • ${activeSOS.nodesNotified} mesh nodes relaying`
+                : 'One-tap broadcast to rescue teams & nearby nodes'}
             </Text>
           </View>
         </View>
@@ -143,15 +171,22 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
 
         {/* SOS Card */}
         <TouchableOpacity
-          style={styles.gridCard}
+          style={[
+            styles.gridCard,
+            activeSOS && { borderColor: Colors.sosRed, borderWidth: 1.5 },
+          ]}
           onPress={onSOSPress}
           activeOpacity={0.7}
         >
           <View style={[styles.gridIconCircle, { backgroundColor: Colors.sosRedLight }]}>
             <Text style={styles.gridIcon}>🚨</Text>
           </View>
-          <Text style={[Typography.bodyBold, { color: Colors.sosRed }]}>SOS Alert</Text>
-          <Text style={Typography.caption}>Distress Beacon</Text>
+          <Text style={[Typography.bodyBold, { color: Colors.sosRed }]}>
+            {activeSOS ? 'SOS Active' : 'SOS Alert'}
+          </Text>
+          <Text style={Typography.caption}>
+            {activeSOS ? 'Track Rescue' : 'Distress Beacon'}
+          </Text>
         </TouchableOpacity>
 
         {/* Chat / Messages Card */}

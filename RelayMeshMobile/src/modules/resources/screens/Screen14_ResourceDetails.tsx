@@ -113,8 +113,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
     <View style={styles.container}>
       <Header
         title="Resource Details"
-        subtitle="Screen 14 • Capacity, amenities & offline mesh freshness"
-        badge="Screen 14"
+        subtitle="Capacity, amenities & offline mesh freshness"
         onBackPress={onBackPress}
         rightAction={
           <TouchableOpacity
@@ -368,7 +367,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
         <View style={styles.actionGroup}>
           {onViewMap && (
             <Button
-              title="🧭 VIEW LOCATION ON OFFLINE MAP (SCREEN 05)"
+              title="🧭 VIEW LOCATION ON OFFLINE MAP"
               variant="primary"
               onPress={() => onViewMap(resource)}
             />
@@ -384,7 +383,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
 
           {onBroadcast && (
             <Button
-              title="📤 BROADCAST RESOURCE OVER MESH (SCREEN 12)"
+              title="📤 BROADCAST RESOURCE OVER MESH"
               variant="outline"
               onPress={() => onBroadcast(resource)}
             />

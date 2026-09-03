@@ -519,7 +519,7 @@ export const Screen05_OfflineMap: React.FC<Props> = ({
                 activeOpacity={0.8}
               >
                 <Text style={styles.hazardActionBtnText}>
-                  🧭 AVOID HAZARD & VIEW DETOUR (SCREEN 15) →
+                  🧭 AVOID HAZARD & VIEW DETOUR →
                 </Text>
               </TouchableOpacity>
             )}
@@ -665,7 +665,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   zoomableLayer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   gridLineHorizontal1: {
     position: 'absolute',

@@ -16,6 +16,7 @@ import {
   Screen07_SOSAlert,
   Screen08_SOSTracking,
   Screen09_SOSHistory,
+  sosService,
 } from './src/modules/sos';
 
 // Member 2: Map Screens
@@ -115,7 +116,11 @@ function MainNavigator() {
   };
 
   const handleSOSPress = () => {
-    setActiveScreen('sos');
+    if (sosService.isSOSActive()) {
+      setActiveScreen('sosAlert');
+    } else {
+      setActiveScreen('sos');
+    }
   };
 
   // Render current active screen
@@ -172,20 +177,33 @@ function MainNavigator() {
         return (
           <Screen01_SOSMain
             onSOSSent={() => setActiveScreen('sosAlert')}
+            onViewHistory={() => setActiveScreen('sosHistory')}
             onCancel={() => setActiveScreen('home')}
           />
         );
       case 'sosAlert':
         return (
           <Screen07_SOSAlert
+            onTrack={() => setActiveScreen('sosTracking')}
             onViewMap={() => { setActiveTab('map'); setActiveScreen('map'); }}
             onCancelSOS={() => setActiveScreen('home')}
           />
         );
       case 'sosTracking':
-        return <Screen08_SOSTracking />;
+        return (
+          <Screen08_SOSTracking
+            onBack={() => setActiveScreen('sosAlert')}
+            onResolved={() => setActiveScreen('sosHistory')}
+            onViewMap={() => { setActiveTab('map'); setActiveScreen('map'); }}
+          />
+        );
       case 'sosHistory':
-        return <Screen09_SOSHistory />;
+        return (
+          <Screen09_SOSHistory
+            onBack={() => setActiveScreen('sos')}
+            onSelectAlert={() => setActiveScreen('sosTracking')}
+          />
+        );
 
       // Member 2: Map & Hazard Reporting
       case 'map':

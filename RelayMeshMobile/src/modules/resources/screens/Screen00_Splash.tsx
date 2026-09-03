@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -15,6 +15,14 @@ interface Props {
 }
 
 export const Screen00_Splash: React.FC<Props> = ({ onFinish }) => {
+  // Auto-transition after 2.5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (onFinish) onFinish();
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [onFinish]);
+
   const handleScreenTap = () => {
     if (onFinish) {
       onFinish();

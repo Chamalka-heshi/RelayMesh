@@ -123,7 +123,13 @@ function MainNavigator() {
     switch (activeScreen) {
       // Member 5: Auth & Home
       case 'splash':
-        return <Screen00_Splash onFinish={() => setActiveScreen(user ? 'home' : 'onboarding')} />;
+        return (
+          <Screen00_Splash
+            onFinish={() => {
+              setActiveScreen(user ? 'home' : 'onboarding');
+            }}
+          />
+        );
       case 'onboarding':
         return <Screen01_Onboarding onComplete={() => setActiveScreen(user ? 'home' : 'login')} />;
       case 'login':

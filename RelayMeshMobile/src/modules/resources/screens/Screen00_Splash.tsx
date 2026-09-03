@@ -8,7 +8,6 @@ import {
   StatusBar,
   TouchableWithoutFeedback
 } from 'react-native';
-import { Typography } from '../../../shared';
 
 interface Props {
   onFinish?: () => void;
@@ -45,7 +44,7 @@ export const Screen00_Splash: React.FC<Props> = ({ onFinish }) => {
               resizeMode="contain"
             />
             
-            <Text style={[Typography.h1, styles.appTitle]}>RelayMesh</Text>
+            <Text style={styles.appTitle}>RelayMesh</Text>
             <Text style={styles.tagline}>Offline. Connected. Together.</Text>
           </View>
         </ImageBackground>
@@ -74,21 +73,22 @@ const styles = StyleSheet.create({
     paddingBottom: 40, 
   },
   logo: {
-    width: 130, 
-    height: 130,
-    marginBottom: 20,
+    width: 120, 
+    height: 120,
+    marginBottom: 24,
   },
   appTitle: {
     color: '#FFFFFF',
-    fontSize: 40,
+    fontSize: 38,
     fontWeight: 'bold',
-    letterSpacing: -0.5,
+    letterSpacing: 0.5,
+    includeFontPadding: false,
   },
   tagline: {
-    color: '#FFFFFF',
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 16,
     fontWeight: '400',
-    marginTop: 8,
+    marginTop: 10,
     letterSpacing: 0.2,
   },
 });

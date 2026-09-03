@@ -1,136 +1,124 @@
 ﻿import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors } from '../theme/colors';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Feather } from '@expo/vector-icons'; // Using sleek vector icons instead of emojis
+import { Colors } from '../';
 
-export type TabName = 'home' | 'map' | 'sos' | 'messages' | 'resources';
+// Note: If TabName is exported from a shared types file, update it there too!
+export type TabName = 'home' | 'map' | 'messages' | 'profile'; 
 
-interface BottomNavProps {
-  activeTab: TabName;
+interface Props {
+  activeTab: TabName | string;
   onTabPress: (tab: TabName) => void;
   onSOSPress: () => void;
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({
-  activeTab,
-  onTabPress,
-  onSOSPress,
-}) => {
+export const BottomNav: React.FC<Props> = ({ activeTab, onTabPress, onSOSPress }) => {
+  
+  // Helper function to render each tab cleanly
+  const renderTab = (id: TabName, label: string, iconName: keyof typeof Feather.glyphMap) => {
+    const isActive = activeTab === id;
+    
+    return (
+      <TouchableOpacity 
+        style={styles.tab} 
+        onPress={() => onTabPress(id)} 
+        activeOpacity={0.7}
+      >
+        <Feather
+          name={iconName}
+          size={24}
+          color={isActive ? '#137333' : '#94A3B8'} // Forest green when active, slate gray when inactive
+        />
+        <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {/* Home Tab */}
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => onTabPress('home')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.icon, activeTab === 'home' && styles.activeIcon]}>🏠</Text>
-        <Text style={[styles.label, activeTab === 'home' && styles.activeLabel]}>Home</Text>
-      </TouchableOpacity>
+      <View style={styles.tabContainer}>
+        {renderTab('home', 'Home', 'home')}
+        {renderTab('map', 'Map', 'map')}
 
-      {/* Map Tab */}
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => onTabPress('map')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.icon, activeTab === 'map' && styles.activeIcon]}>🗺️</Text>
-        <Text style={[styles.label, activeTab === 'map' && styles.activeLabel]}>Map</Text>
-      </TouchableOpacity>
+        {/* Elevated Center SOS Button */}
+        <View style={styles.sosContainer}>
+          <TouchableOpacity 
+            style={styles.sosButton} 
+            onPress={onSOSPress} 
+            activeOpacity={0.8}
+          >
+            <Text style={styles.sosText}>SOS</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Floating Center SOS Button */}
-      <View style={styles.sosWrapper}>
-        <TouchableOpacity
-          style={styles.sosButton}
-          onPress={onSOSPress}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.sosText}>SOS</Text>
-        </TouchableOpacity>
+        {renderTab('messages', 'Chat', 'message-square')}
+        {renderTab('profile', 'Profile', 'user')}
       </View>
-
-      {/* Messages Tab */}
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => onTabPress('messages')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.icon, activeTab === 'messages' && styles.activeIcon]}>💬</Text>
-        <Text style={[styles.label, activeTab === 'messages' && styles.activeLabel]}>Chat</Text>
-      </TouchableOpacity>
-
-      {/* Resources Tab */}
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => onTabPress('resources')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.icon, activeTab === 'resources' && styles.activeIcon]}>📦</Text>
-        <Text style={[styles.label, activeTab === 'resources' && styles.activeLabel]}>Relief</Text>
-      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 68,
     backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingHorizontal: 8,
-    position: 'relative',
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+    paddingTop: 8,
+    // Soft shadow for a floating effect
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 10,
   },
-  tabItem: {
-    flex: 1,
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
+    width: 60,
   },
-  icon: {
-    fontSize: 20,
-    marginBottom: 2,
-    opacity: 0.6,
+  tabText: {
+    fontSize: 10,
+    marginTop: 4,
+    color: '#94A3B8',
+    fontWeight: '600',
   },
-  activeIcon: {
-    opacity: 1,
-  },
-  label: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  activeLabel: {
-    color: Colors.primary,
+  tabTextActive: {
+    color: '#137333', // Your theme's primary green
     fontWeight: '700',
   },
-  sosWrapper: {
-    top: -16,
+  sosContainer: {
+    width: 70,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 4,
+    marginTop: -32, // Pulls the SOS button up out of the bar
   },
   sosButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.sosRed,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#EF4444', // Danger Red
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.sosRed,
+    borderWidth: 4,
+    borderColor: '#FFFFFF', // Creates the "cutout" look against the background
+    shadowColor: '#EF4444',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 6,
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   sosText: {
     color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontWeight: '900',
+    fontSize: 16,
+    letterSpacing: 1,
   },
 });

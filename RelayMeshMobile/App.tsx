@@ -3,11 +3,8 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, BottomNav, TabName } from './src/shared';
 import { seedInitialData } from './src/database';
 import Conversation from './src/database/Conversation';
@@ -86,7 +83,7 @@ type ScreenId =
 
 function MainNavigator() {
   const { user, loading } = useAuth();
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('splash');
   const [activeTab, setActiveTab] = useState<TabName>('home');
   
   // Combined state variables from both branches
@@ -111,8 +108,8 @@ function MainNavigator() {
       case 'messages':
         setActiveScreen('messages');
         break;
-      case 'resources':
-        setActiveScreen('resources');
+      case 'profile':
+        setActiveScreen('profile');
         break;
     }
   };
@@ -155,7 +152,7 @@ function MainNavigator() {
             onNavigate={(dest) => {
               if (dest === 'map') { setActiveTab('map'); setActiveScreen('map'); }
               else if (dest === 'messages') { setActiveTab('messages'); setActiveScreen('messages'); }
-              else if (dest === 'resources') { setActiveTab('resources'); setActiveScreen('resources'); }
+              else if (dest === 'resources') { setActiveScreen('resources'); }
               else if (dest === 'mesh') setActiveScreen('mesh');
               else if (dest === 'settings') setActiveScreen('settings');
               else if (dest === 'profile') setActiveScreen('profile');
@@ -337,35 +334,6 @@ function MainNavigator() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Top Figma Screen Showcase Switcher Bar */}
-      <View style={styles.showcaseBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.showcaseScroll}>
-          <Text style={styles.showcaseLabel}>FIGMA SCREENS:</Text>
-          <ScreenPill title="Splash" active={activeScreen === 'splash'} onPress={() => setActiveScreen('splash')} />
-          <ScreenPill title="Onboard" active={activeScreen === 'onboarding'} onPress={() => setActiveScreen('onboarding')} />
-          <ScreenPill title="Login" active={activeScreen === 'login'} onPress={() => setActiveScreen('login')} />
-          <ScreenPill title="Register" active={activeScreen === 'register'} onPress={() => setActiveScreen('register')} />
-          <ScreenPill title="Home" active={activeScreen === 'home'} onPress={() => { setActiveTab('home'); setActiveScreen('home'); }} />
-          <ScreenPill title="Map (05)" active={activeScreen === 'map'} onPress={() => { setActiveTab('map'); setActiveScreen('map'); }} />
-          <ScreenPill title="Filters (06)" active={activeScreen === 'mapFilter'} onPress={() => setActiveScreen('mapFilter')} />
-          <ScreenPill title="Hazard (15)" active={activeScreen === 'routeNav'} onPress={() => setActiveScreen('routeNav')} />
-          <ScreenPill title="SOS" active={activeScreen === 'sos'} onPress={() => setActiveScreen('sos')} />
-          <ScreenPill title="SOS Sent" active={activeScreen === 'sosAlert'} onPress={() => setActiveScreen('sosAlert')} />
-          <ScreenPill title="Chat 1 (List)" active={activeScreen === 'messages'} onPress={() => { setActiveTab('messages'); setActiveScreen('messages'); }} />
-          <ScreenPill title="Chat 2 (Detail)" active={activeScreen === 'directChat'} onPress={() => setActiveScreen('directChat')} />
-          <ScreenPill title="Resources (13)" active={activeScreen === 'resources'} onPress={() => { setActiveTab('resources'); setActiveScreen('resources'); }} />
-          <ScreenPill title="Res Details (14)" active={activeScreen === 'resourceDetail'} onPress={() => setActiveScreen('resourceDetail')} />
-
-          <ScreenPill title="Mesh Graph (16)" active={activeScreen === 'mesh'} onPress={() => setActiveScreen('mesh')} />
-          <ScreenPill title="Nearby Nodes (17)" active={activeScreen === 'nearby'} onPress={() => setActiveScreen('nearby')} />
-          <ScreenPill title="Store & Forward (18)" active={activeScreen === 'storeForward'} onPress={() => setActiveScreen('storeForward')} />
-          <ScreenPill title="Relay Config (19)" active={activeScreen === 'relayConfig'} onPress={() => setActiveScreen('relayConfig')} />
-
-          <ScreenPill title="Settings" active={activeScreen === 'settings'} onPress={() => setActiveScreen('settings')} />
-          <ScreenPill title="Profile" active={activeScreen === 'profile'} onPress={() => setActiveScreen('profile')} />
-        </ScrollView>
-      </View>
-
       {/* Active Screen View */}
       <View style={styles.screenContainer}>{renderScreen()}</View>
 
@@ -383,67 +351,27 @@ function MainNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainNavigator />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <MainNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
-
-const ScreenPill: React.FC<{ title: string; active: boolean; onPress: () => void }> = ({
-  title,
-  active,
-  onPress,
-}) => (
-  <TouchableOpacity
-    style={[styles.pill, active && styles.pillActive]}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    <Text style={[styles.pillText, active && styles.pillTextActive]}>{title}</Text>
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  showcaseBar: {
-    backgroundColor: '#0F172A',
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-  },
-  showcaseScroll: {
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    gap: 6,
-  },
-  showcaseLabel: {
-    color: '#94A3B8',
-    fontSize: 10,
-    fontWeight: '800',
-    marginRight: 4,
-  },
-  pill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: '#1E293B',
-  },
-  pillActive: {
-    backgroundColor: Colors.primaryLight,
-  },
-  pillText: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  pillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    // 1. Force the app to never exceed the window width
+    width: '100%',
+    maxWidth: '100%',
+    // 2. Hide anything that tries to bleed off the edges globally
+    overflow: 'hidden',
   },
   screenContainer: {
     flex: 1,
+    // 3. Ensure the screen wrapper strictly respects the parent's boundaries
+    width: '100%',
   },
 });

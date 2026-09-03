@@ -5,14 +5,11 @@ module.exports = function (api) {
       [
         'babel-preset-expo',
         {
-          // Ensure TypeScript transforms 'declare' before class properties
-          lazyImports: true,
+          decorators: {
+            legacy: true,
+          },
         },
       ],
-    ],
-    plugins: [
-      ['@babel/plugin-proposal-decorators', { legacy: true }],
-      ['@babel/plugin-transform-class-properties', { loose: true }],
     ],
   };
 };

@@ -337,8 +337,15 @@ function MainNavigator() {
     activeScreen === 'directChat';
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView 
+      style={styles.container} 
+      edges={isFullScreen ? ['left', 'right'] : ['top', 'left', 'right']}
+    >
+      <StatusBar 
+        barStyle={activeScreen === 'splash' ? 'light-content' : 'dark-content'} 
+        backgroundColor="transparent"
+        translucent
+      />
 
       {/* Active Screen View */}
       <View style={styles.screenContainer}>{renderScreen()}</View>

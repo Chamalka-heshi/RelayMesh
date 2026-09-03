@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons'; // Using sleek vector icons instead of emojis
 import { Colors } from '../';
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const BottomNav: React.FC<Props> = ({ activeTab, onTabPress, onSOSPress }) => {
+  const insets = useSafeAreaInsets();
   
   // Helper function to render each tab cleanly
   const renderTab = (id: TabName, label: string, iconName: keyof typeof Feather.glyphMap) => {
@@ -37,7 +39,7 @@ export const BottomNav: React.FC<Props> = ({ activeTab, onTabPress, onSOSPress }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.tabContainer}>
         {renderTab('home', 'Home', 'home')}
         {renderTab('map', 'Map', 'map')}

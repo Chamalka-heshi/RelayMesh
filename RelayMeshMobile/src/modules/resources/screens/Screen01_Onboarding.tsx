@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography } from '../../../shared';
 
 interface Props {

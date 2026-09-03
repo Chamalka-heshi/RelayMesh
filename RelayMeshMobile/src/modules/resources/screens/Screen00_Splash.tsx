@@ -31,14 +31,13 @@ export const Screen00_Splash: React.FC<Props> = ({ onFinish }) => {
 
   return (
     <TouchableWithoutFeedback onPress={handleScreenTap}>
-      <View style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
         <ImageBackground
           source={require('../../../../assets/splash_bg.png')} 
           style={styles.background}
           resizeMode="cover"
         >
-          <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-          
           <View style={styles.centerContent}>
             <Image
               source={require('../../../../assets/splash_logo.png')} 
@@ -56,6 +55,12 @@ export const Screen00_Splash: React.FC<Props> = ({ onFinish }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#0F172A',
+  },
   background: {
     flex: 1,
     width: '100%',

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Card, StatusBadge, Colors, Typography } from '../../../shared';
+import { useAuth } from '../../../context';
 
 interface Props {
   onNavigate: (screen: string) => void;
@@ -17,9 +18,24 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
   onNavigate,
   onSOSPress,
 }) => {
+  const { user, profile } = useAuth();
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'RM';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const displayName = profile?.fullName || user?.email?.split('@')[0] || 'Relay User';
+  const displayRole = profile?.role === 'volunteer' ? 'Volunteer Rescuer' : 'Citizen Responder';
+  const displayNodeId = profile?.nodeId || '#RM-4587';
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Top Green Brand Bar */}
+      {/* Top Green Brand Bar with User Details */}
       <View style={styles.topGreenCard}>
         <View style={styles.topRow}>
           <View style={styles.brandGroup}>
@@ -32,10 +48,26 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
           <TouchableOpacity
             style={styles.profileAvatar}
             onPress={() => onNavigate('profile')}
+            activeOpacity={0.8}
           >
-            <Text style={styles.avatarText}>SN</Text>
+            <Text style={styles.avatarText}>{getInitials(displayName)}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* User Identity Banner */}
+        <TouchableOpacity 
+          style={styles.userBar}
+          onPress={() => onNavigate('profile')}
+          activeOpacity={0.8}
+        >
+          <View>
+            <Text style={styles.welcomeText}>Hello, {displayName}</Text>
+            <Text style={styles.userRoleText}>{displayRole} • Node: {displayNodeId}</Text>
+          </View>
+          <View style={styles.activeTag}>
+            <Text style={styles.activeTagText}>ACTIVE NODE</Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Mesh Network Connection Status Card */}
@@ -229,9 +261,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   profileAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
     borderWidth: 2,
     borderColor: '#FFFFFF',
@@ -241,7 +273,38 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 13,
+    fontSize: 14,
+  },
+  userBar: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  welcomeText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  userRoleText: {
+    color: '#E8F5EC',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  activeTag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  activeTagText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   statusCard: {
     marginVertical: 4,
@@ -254,22 +317,22 @@ const styles = StyleSheet.create({
   },
   statusDetailsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: Colors.accentGreenBorder,
+    borderTopColor: Colors.borderLight,
   },
   statusCol: {
     alignItems: 'center',
   },
   statusColVal: {
     fontSize: 16,
-    fontWeight: '800',
-    color: Colors.primary,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   statusColLbl: {
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.textSecondary,
     marginTop: 2,
   },
@@ -277,12 +340,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.sosRedLight,
-    borderColor: Colors.sosRedBorder,
-    borderWidth: 1.5,
-    borderRadius: 16,
-    padding: 12,
-    marginVertical: 10,
+    backgroundColor: Colors.sosRed,
+    borderRadius: 14,
+    padding: 14,
+    marginVertical: 12,
   },
   sosBannerLeft: {
     flexDirection: 'row',
@@ -290,73 +351,69 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sosMiniCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.sosRed,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
   sosMiniText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 11,
+    color: Colors.sosRed,
+    fontWeight: '900',
+    fontSize: 13,
   },
   sosTextCol: {
     flex: 1,
   },
   sosBannerTitle: {
-    color: Colors.sosRed,
-    fontWeight: '700',
-    fontSize: 14,
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
   },
   sosBannerSub: {
-    color: Colors.textSecondary,
+    color: '#FEE2E2',
     fontSize: 11,
     marginTop: 2,
   },
   sosChevron: {
-    color: Colors.sosRed,
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '800',
     marginLeft: 8,
   },
   sectionTitle: {
-    marginVertical: 8,
+    marginBottom: 10,
+    marginTop: 4,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginVertical: 4,
+    justifyContent: 'space-between',
   },
   gridCard: {
     width: '48%',
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    borderColor: Colors.borderLight,
   },
   gridIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   gridIcon: {
-    fontSize: 18,
+    fontSize: 20,
   },
   alertCard: {
-    marginVertical: 10,
+    marginTop: 4,
     borderLeftWidth: 4,
     borderLeftColor: Colors.warning,
   },

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
 
 export interface UserProfile {
@@ -33,137 +34,117 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const LOCAL_USER_KEY = '@relaymesh_current_user';
+const LOCAL_USERS_DB_KEY = '@relaymesh_registered_users';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Generate a deterministic or random fallback node ID if none exists
+  // Helper to generate unique node ID
   const generateNodeId = () => {
     const randomHex = Math.floor(1000 + Math.random() * 9000).toString();
     return `#RM-${randomHex}`;
   };
 
-  const extractProfileFromUser = (usr: User | null): UserProfile | null => {
-    if (!usr) return null;
-    const metadata = usr.user_metadata || {};
-    return {
-      id: usr.id,
-      email: usr.email || '',
-      fullName: metadata.full_name || metadata.name || 'Responder Node',
-      role: metadata.role || 'citizen',
-      nodeId: metadata.node_id || `#RM-${usr.id.substring(0, 4).toUpperCase()}`,
-      phone: metadata.phone || '',
-      bloodGroup: metadata.blood_group || 'O+ Positive',
-      medicalNotes: metadata.medical_notes || 'None specified',
-      emergencyContact: metadata.emergency_contact || '+94 77 123 4567',
-    };
-  };
-
-  // Sync profile with database public.profiles table if available
-  const syncWithDatabaseProfile = async (usr: User | null, initialProf: UserProfile | null) => {
-    if (!usr || !initialProf) return;
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', usr.id)
-        .maybeSingle();
-
-      if (data && !error) {
-        setProfile({
-          id: usr.id,
-          email: usr.email || '',
-          fullName: data.full_name || initialProf.fullName,
-          role: data.role || initialProf.role,
-          nodeId: data.node_id || initialProf.nodeId,
-          phone: data.phone || initialProf.phone,
-          bloodGroup: data.blood_group || initialProf.bloodGroup,
-          medicalNotes: data.medical_notes || initialProf.medicalNotes,
-          emergencyContact: data.emergency_contact || initialProf.emergencyContact,
-        });
-      } else {
-        // Attempt to upsert initial profile into profiles table
-        await supabase.from('profiles').upsert(
-          {
-            id: usr.id,
-            email: usr.email,
-            full_name: initialProf.fullName,
-            role: initialProf.role,
-            node_id: initialProf.nodeId,
-            phone: initialProf.phone,
-            blood_group: initialProf.bloodGroup,
-            medical_notes: initialProf.medicalNotes,
-            emergency_contact: initialProf.emergencyContact,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        );
-      }
-    } catch {
-      // Gracefully ignore if profiles table is not yet created
-    }
-  };
-
+  // Restore stored session on mount
   useEffect(() => {
-    // 1. Initial Session Check
-    supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
-      if (error) {
-        console.error('Error fetching session:', error.message);
+    const restoreSession = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(LOCAL_USER_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setUser(parsed.user);
+          setProfile(parsed.profile);
+        }
+      } catch (e) {
+        console.log('Error restoring local session:', e);
+      } finally {
+        setLoading(false);
       }
-      setSession(currentSession);
-      const currentUser = currentSession?.user ?? null;
-      setUser(currentUser);
-      const extracted = extractProfileFromUser(currentUser);
-      setProfile(extracted);
-      setLoading(false);
-
-      if (currentUser && extracted) {
-        syncWithDatabaseProfile(currentUser, extracted);
-      }
-    });
-
-    // 2. Listen to Auth State Changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      const newUser = newSession?.user ?? null;
-      setUser(newUser);
-      const extracted = extractProfileFromUser(newUser);
-      setProfile(extracted);
-      setLoading(false);
-
-      if (newUser && extracted) {
-        syncWithDatabaseProfile(newUser, extracted);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
     };
+    restoreSession();
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const cleanEmail = email.trim().toLowerCase();
 
-      if (error) {
-        return { error: error.message };
+      // Check local registered users first
+      const storedUsersRaw = await AsyncStorage.getItem(LOCAL_USERS_DB_KEY);
+      const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+
+      const found = registeredUsers.find(
+        (u: any) => u.email.toLowerCase() === cleanEmail && u.password === password
+      );
+
+      let loggedInUser: any = null;
+      let loggedInProfile: UserProfile | null = null;
+
+      if (found) {
+        loggedInUser = {
+          id: found.id,
+          email: found.email,
+          user_metadata: {
+            full_name: found.fullName,
+            role: found.role,
+            node_id: found.nodeId,
+            phone: found.phone,
+          },
+        };
+        loggedInProfile = {
+          id: found.id,
+          email: found.email,
+          fullName: found.fullName,
+          role: found.role,
+          nodeId: found.nodeId,
+          phone: found.phone || '',
+          bloodGroup: found.bloodGroup || 'O+ Positive',
+          medicalNotes: found.medicalNotes || 'None specified',
+          emergencyContact: found.emergencyContact || '+94 77 123 4567',
+        };
+      } else {
+        // Fallback: Create instant mock session for demo/offline test
+        const mockId = 'usr-' + Math.random().toString(36).substring(2, 9);
+        const namePart = cleanEmail.split('@')[0];
+        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        const nodeId = generateNodeId();
+
+        loggedInUser = {
+          id: mockId,
+          email: cleanEmail,
+          user_metadata: {
+            full_name: formattedName,
+            role: 'citizen',
+            node_id: nodeId,
+          },
+        };
+
+        loggedInProfile = {
+          id: mockId,
+          email: cleanEmail,
+          fullName: formattedName,
+          role: 'citizen',
+          nodeId: nodeId,
+          phone: '+94 77 000 0000',
+          bloodGroup: 'O+ Positive',
+          medicalNotes: 'None specified',
+          emergencyContact: '+94 77 123 4567',
+        };
       }
 
-      setUser(data.user);
-      setSession(data.session);
-      const extracted = extractProfileFromUser(data.user);
-      setProfile(extracted);
-      if (data.user && extracted) {
-        syncWithDatabaseProfile(data.user, extracted);
-      }
+      setUser(loggedInUser);
+      setProfile(loggedInProfile);
+      await AsyncStorage.setItem(
+        LOCAL_USER_KEY,
+        JSON.stringify({ user: loggedInUser, profile: loggedInProfile })
+      );
+
       return { error: null };
     } catch (err: any) {
-      return { error: err.message || 'An unexpected error occurred during sign in.' };
+      return { error: err.message || 'Login failed.' };
     }
   };
 
@@ -181,48 +162,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone?: string;
   }) => {
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const nodeId = generateNodeId();
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+      const newId = 'usr-' + Date.now().toString();
+
+      const newRecord = {
+        id: newId,
+        email: cleanEmail,
         password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-            role,
-            node_id: nodeId,
-            phone: phone || '',
-          },
+        fullName: fullName.trim(),
+        role,
+        nodeId,
+        phone: phone || '',
+        bloodGroup: 'O+ Positive',
+        medicalNotes: 'None specified',
+        emergencyContact: '+94 77 123 4567',
+      };
+
+      // Save to local registry
+      const storedUsersRaw = await AsyncStorage.getItem(LOCAL_USERS_DB_KEY);
+      const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+      registeredUsers.push(newRecord);
+      await AsyncStorage.setItem(LOCAL_USERS_DB_KEY, JSON.stringify(registeredUsers));
+
+      // Auto login newly registered user
+      const registeredUser: any = {
+        id: newId,
+        email: cleanEmail,
+        user_metadata: {
+          full_name: newRecord.fullName,
+          role: newRecord.role,
+          node_id: newRecord.nodeId,
+          phone: newRecord.phone,
         },
-      });
+      };
 
-      if (error) {
-        return { error: error.message };
-      }
+      const registeredProfile: UserProfile = {
+        id: newId,
+        email: cleanEmail,
+        fullName: newRecord.fullName,
+        role: newRecord.role,
+        nodeId: newRecord.nodeId,
+        phone: newRecord.phone,
+        bloodGroup: newRecord.bloodGroup,
+        medicalNotes: newRecord.medicalNotes,
+        emergencyContact: newRecord.emergencyContact,
+      };
 
-      // Check if email confirmation is required by Supabase project settings
-      if (data.user && !data.session) {
-        return {
-          error: null,
-          message: 'Account created! Please check your email to confirm your registration if required.',
-        };
-      }
+      setUser(registeredUser);
+      setProfile(registeredProfile);
+      await AsyncStorage.setItem(
+        LOCAL_USER_KEY,
+        JSON.stringify({ user: registeredUser, profile: registeredProfile })
+      );
 
-      setUser(data.user);
-      setSession(data.session);
-      const extracted = extractProfileFromUser(data.user);
-      setProfile(extracted);
-      if (data.user && extracted) {
-        syncWithDatabaseProfile(data.user, extracted);
-      }
       return { error: null, message: 'Account created successfully!' };
     } catch (err: any) {
-      return { error: err.message || 'An unexpected error occurred during registration.' };
+      return { error: err.message || 'Registration failed.' };
     }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await AsyncStorage.removeItem(LOCAL_USER_KEY);
       setUser(null);
       setSession(null);
       setProfile(null);
@@ -233,45 +235,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (updated: Partial<UserProfile>) => {
     try {
-      if (!user) return { error: 'No authenticated user found' };
+      if (!profile) return { error: 'No profile found' };
 
-      const { data, error } = await supabase.auth.updateUser({
-        data: {
-          full_name: updated.fullName ?? profile?.fullName,
-          role: updated.role ?? profile?.role,
-          blood_group: updated.bloodGroup ?? profile?.bloodGroup,
-          medical_notes: updated.medicalNotes ?? profile?.medicalNotes,
-          emergency_contact: updated.emergencyContact ?? profile?.emergencyContact,
-          phone: updated.phone ?? profile?.phone,
-        },
-      });
+      const newProfile: UserProfile = {
+        ...profile,
+        ...updated,
+      };
 
-      if (error) {
-        return { error: error.message };
-      }
-
-      setUser(data.user);
-      const extracted = extractProfileFromUser(data.user);
-      setProfile(extracted);
-
-      // Also update public.profiles table if present
-      try {
-        await supabase.from('profiles').upsert(
-          {
-            id: user.id,
-            full_name: updated.fullName ?? profile?.fullName,
-            role: updated.role ?? profile?.role,
-            blood_group: updated.bloodGroup ?? profile?.bloodGroup,
-            medical_notes: updated.medicalNotes ?? profile?.medicalNotes,
-            emergency_contact: updated.emergencyContact ?? profile?.emergencyContact,
-            phone: updated.phone ?? profile?.phone,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        );
-      } catch {
-        // Ignore if profiles table is not setup
-      }
+      setProfile(newProfile);
+      await AsyncStorage.setItem(
+        LOCAL_USER_KEY,
+        JSON.stringify({ user, profile: newProfile })
+      );
 
       return { error: null };
     } catch (err: any) {

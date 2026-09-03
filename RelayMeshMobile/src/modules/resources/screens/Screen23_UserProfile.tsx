@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  Modal, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert 
+} from 'react-native';
 import { Header, Card, Button, StatusBadge, Colors, Typography } from '../../../shared';
 import { useAuth } from '../../../context';
 
@@ -8,7 +17,14 @@ interface Props {
 }
 
 export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editBloodGroup, setEditBloodGroup] = useState('');
+  const [editEmergencyContact, setEditEmergencyContact] = useState('');
+  const [editMedicalNotes, setEditMedicalNotes] = useState('');
 
   const getInitials = (name: string) => {
     if (!name) return 'RM';
@@ -24,6 +40,37 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
   const displayNodeId = profile?.nodeId || (user ? `#RM-${user.id.slice(0, 4).toUpperCase()}` : '#RM-4587');
   const displayEmail = user?.email || profile?.email || 'offline-node@relaymesh.local';
   const displayPhone = profile?.phone || '+94 77 123 4567';
+
+  const openEditModal = () => {
+    setEditName(profile?.fullName || '');
+    setEditPhone(profile?.phone || '');
+    setEditBloodGroup(profile?.bloodGroup || 'O+ Positive');
+    setEditEmergencyContact(profile?.emergencyContact || '+94 77 123 4567');
+    setEditMedicalNotes(profile?.medicalNotes || 'None specified');
+    setEditModalVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert('Validation Error', 'Name cannot be empty.');
+      return;
+    }
+
+    const result = await updateProfile({
+      fullName: editName.trim(),
+      phone: editPhone.trim(),
+      bloodGroup: editBloodGroup.trim(),
+      emergencyContact: editEmergencyContact.trim(),
+      medicalNotes: editMedicalNotes.trim(),
+    });
+
+    if (result.error) {
+      Alert.alert('Error', result.error);
+    } else {
+      setEditModalVisible(false);
+      Alert.alert('Success', 'Profile updated successfully!');
+    }
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -45,7 +92,7 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
         <View style={{ marginTop: 6 }}>
           <StatusBadge
             status={user ? 'connected' : 'offline'}
-            label={user ? 'Supabase Auth Verified' : 'Local Standalone Node'}
+            label={user ? 'Mock Auth Verified' : 'Local Standalone Node'}
           />
         </View>
       </View>
@@ -89,17 +136,103 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
           <Text style={Typography.bodyBold}>3 Beacons</Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={Typography.body}>Encryption Key Fingerprint</Text>
+          <Text style={Typography.body}>Node Encryption Key</Text>
           <Text style={[Typography.caption, { fontWeight: '700' }]}>
-            {user ? `UID:${user.id.slice(0, 16)}...` : 'SHA256: 4A:9F:88:E2:...'}
+            {displayNodeId}-ED25519-KEY
           </Text>
         </View>
       </Card>
 
       <View style={styles.btnGroup}>
-        <Button title="EDIT EMERGENCY PROFILE" variant="primary" onPress={() => {}} />
-        <Button title="MANAGE PRIVACY & SECURITY" variant="outline" onPress={() => {}} />
+        <Button 
+          title="EDIT EMERGENCY PROFILE" 
+          variant="primary" 
+          onPress={openEditModal} 
+        />
       </View>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={editModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[Typography.h2, { marginBottom: 16 }]}>Edit Emergency Profile</Text>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>FULL NAME</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Full Name"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>PHONE NUMBER</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editPhone}
+                  onChangeText={setEditPhone}
+                  placeholder="Phone Number"
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>BLOOD GROUP</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editBloodGroup}
+                  onChangeText={setEditBloodGroup}
+                  placeholder="e.g. O+ Positive, A-, B+"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>EMERGENCY CONTACT</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editEmergencyContact}
+                  onChangeText={setEditEmergencyContact}
+                  placeholder="Contact Name & Number"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>MEDICAL NOTES</Text>
+                <TextInput
+                  style={[styles.textInput, { height: 70, textAlignVertical: 'top' }]}
+                  value={editMedicalNotes}
+                  onChangeText={setEditMedicalNotes}
+                  placeholder="Allergies, chronic conditions..."
+                  multiline
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveBtn}
+                onPress={handleSaveProfile}
+              >
+                <Text style={styles.saveBtnText}>Save Changes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -112,4 +245,65 @@ const styles = StyleSheet.create({
   avatarInitials: { color: '#FFFFFF', fontSize: 26, fontWeight: '800' },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
   btnGroup: { marginTop: 14, gap: 8 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '85%',
+  },
+  inputGroup: {
+    marginBottom: 12,
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  textInput: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: '#111827',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  cancelBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+  },
+  cancelBtnText: {
+    color: '#4B5563',
+    fontWeight: '600',
+  },
+  saveBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: Colors.primary,
+  },
+  saveBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
 });

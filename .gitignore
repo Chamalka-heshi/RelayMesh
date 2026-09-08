@@ -23,3 +23,5 @@ backend/*.exe
 # Environment variables
 .env
 .DS_Store
+# Mobile web dist build
+RelayMeshMobile/dist/

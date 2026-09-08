@@ -30,12 +30,21 @@ const RawScreen10_ChatList: React.FC<Props> = ({
   const getPeerName = (participantIdsStr: string) => {
     try {
       const ids = JSON.parse(participantIdsStr);
-      const peer = ids.find((id: string) => id !== 'local_user_id');
-      return peer ? `Node ${peer.substring(0, 6).toUpperCase()}` : 'Unknown Node';
+      if (Array.isArray(ids)) {
+        const peer = ids.find((id: string) => id !== 'local_user_id');
+        if (peer) {
+          if (peer.includes('Officer') || peer.includes('Leader') || peer.includes('Coordinator')) {
+            return peer;
+          }
+          return `Node ${peer.substring(0, 8).toUpperCase()}`;
+        }
+      }
     } catch (error) {
-      // Fallback if parsing fails
-      return `Node ${participantIdsStr.substring(0, 6)}`;
+      if (participantIdsStr.includes('Officer') || participantIdsStr.includes('Leader')) {
+        return participantIdsStr;
+      }
     }
+    return `Node ${participantIdsStr.substring(0, 8)}`;
   };
 
   // Convert the timestamp to a readable time format
@@ -116,15 +125,12 @@ const RawScreen10_ChatList: React.FC<Props> = ({
                 {/* Content */}
                 <View style={styles.chatInfo}>
                   <View style={styles.nameRow}>
-                    <Text style={Typography.bodyBold}>
+                    <Text style={Typography.bodyBold} numberOfLines={1}>
                       {getPeerName(item.participantIds)}
                     </Text>
                     <Text style={Typography.caption}>
                       {formatTime(item.lastMessageAt)}
                     </Text>
-                    <Text style={Typography.bodyBold}>Node {item.participantIds ? item.participantIds.substring(0, 6) : item.id}...</Text>
-                    {/* Placeholder for relation fetching */}
-                    <Text style={Typography.caption}>Just now</Text>
                   </View>
                   
                   <Text

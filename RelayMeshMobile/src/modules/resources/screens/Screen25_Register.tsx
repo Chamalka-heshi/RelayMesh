@@ -29,7 +29,6 @@ export const Screen25_Register: React.FC<Props> = ({
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<'citizen' | 'volunteer'>('citizen');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -54,7 +53,7 @@ export const Screen25_Register: React.FC<Props> = ({
       email: email.trim(),
       password,
       fullName: name.trim(),
-      role,
+      role: 'citizen',
       phone: phone.trim(),
     });
 
@@ -105,30 +104,6 @@ export const Screen25_Register: React.FC<Props> = ({
           </View>
         )}
 
-        {/* Role Selector */}
-        <View style={styles.roleContainer}>
-          <Text style={styles.inputLabel}>SELECT YOUR ROLE</Text>
-          <View style={styles.roleSelector}>
-            <TouchableOpacity
-              style={[styles.roleBtn, role === 'citizen' && styles.roleBtnActive]}
-              onPress={() => setRole('citizen')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.roleText, role === 'citizen' && styles.roleTextActive]}>
-                👤 Citizen
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.roleBtn, role === 'volunteer' && styles.roleBtnActive]}
-              onPress={() => setRole('volunteer')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.roleText, role === 'volunteer' && styles.roleTextActive]}>
-                🚤 Volunteer Rescuer
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* Form Group */}
         <View style={styles.form}>
@@ -302,36 +277,6 @@ const styles = StyleSheet.create({
     color: '#B91C1C',
     fontSize: 13,
     fontWeight: '600',
-  },
-  roleContainer: {
-    marginBottom: 16,
-    gap: 8,
-  },
-  roleSelector: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  roleBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    alignItems: 'center',
-  },
-  roleBtnActive: {
-    backgroundColor: '#E8F5EC',
-    borderColor: '#1B7340',
-  },
-  roleText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  roleTextActive: {
-    color: '#1B7340',
-    fontWeight: '700',
   },
   form: {
     gap: 14,

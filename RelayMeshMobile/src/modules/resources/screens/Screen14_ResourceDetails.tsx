@@ -18,7 +18,7 @@ interface Props {
   resourceId?: string;
   onBackPress?: () => void;
   onViewMap?: (resource: ResourceItem) => void;
-  onContact?: (coordinator: string) => void;
+  onContact?: (coordinator: string, resourceTitle?: string) => void;
   onBroadcast?: (resource: ResourceItem) => void;
 }
 
@@ -377,7 +377,7 @@ export const Screen14_ResourceDetails: React.FC<Props> = ({
             <Button
               title="💬 MESSAGE ON-SITE COORDINATOR (CHAT)"
               variant="outline"
-              onPress={() => onContact(resource.contactInfo.coordinator)}
+              onPress={() => onContact(resource.contactInfo.coordinator, resource.title)}
             />
           )}
 

@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, BottomNav, TabName } from './src/shared';
-import { seedInitialData } from './src/database';
+import { database, seedInitialData, Message } from './src/database';
 import Conversation from './src/database/Conversation';
 import { AuthProvider, useAuth } from './src/context';
 
@@ -120,6 +120,56 @@ function MainNavigator() {
       setActiveScreen('sosAlert');
     } else {
       setActiveScreen('sos');
+    }
+  };
+
+  const handleOpenCoordinatorChat = async (coordinatorName: string, resourceTitle?: string) => {
+    try {
+      const convCollection = database.collections.get<Conversation>('conversations');
+      const allConvs = await convCollection.query().fetch();
+
+      // Look for existing conversation with this coordinator
+      let targetConv = allConvs.find((c) => {
+        try {
+          const ids = JSON.parse(c.participantIds);
+          return Array.isArray(ids) && ids.includes(coordinatorName);
+        } catch {
+          return c.participantIds === coordinatorName;
+        }
+      });
+
+      // If no conversation exists yet, create one in WatermelonDB
+      if (!targetConv) {
+        await database.write(async () => {
+          targetConv = await convCollection.create((conv) => {
+            conv.participantIds = JSON.stringify(['local_user_id', coordinatorName]);
+            conv.isGroup = false;
+            conv.lastMessageAt = Date.now();
+          });
+
+          // Create an initial greeting message from the coordinator on-site
+          const msgCollection = database.collections.get<Message>('messages');
+          const greetingText = resourceTitle
+            ? `Hello! This is ${coordinatorName} on-site at ${resourceTitle}. Radio link and mesh relay are active. How can we assist you today?`
+            : `Hello! This is ${coordinatorName}. Our field station is operational. How can we assist you today?`;
+
+          await msgCollection.create((msg) => {
+            msg.conversationId = targetConv!.id;
+            msg.senderId = coordinatorName;
+            msg.encryptedPayload = greetingText;
+            msg.status = 'Delivered';
+            msg.hopCount = 1;
+          });
+        });
+      }
+
+      if (targetConv) {
+        setSelectedChat(targetConv);
+        setActiveTab('messages');
+        setActiveScreen('directChat');
+      }
+    } catch (error) {
+      console.error('Error opening coordinator chat:', error);
     }
   };
 
@@ -253,7 +303,10 @@ function MainNavigator() {
         return (
           <Screen11_DirectChat
             conversation={selectedChat}
-            onBack={() => setActiveScreen('messages')}
+            onBack={() => {
+              setActiveTab('messages');
+              setActiveScreen('messages');
+            }}
           />
         );
       case 'broadcast':
@@ -309,11 +362,8 @@ function MainNavigator() {
               setActiveTab('map');
               setActiveScreen('map');
             }}
-            onContact={(coordinator) => {
-              // Cast to 'any' because another team member passes a string here, 
-              // but your chat system correctly expects a Conversation object.
-              setSelectedChat(coordinator as any);
-              setActiveScreen('directChat');
+            onContact={(coordinator, resourceTitle) => {
+              handleOpenCoordinatorChat(coordinator, resourceTitle);
             }}
             onBroadcast={(res) => {
               setActiveScreen('broadcast');

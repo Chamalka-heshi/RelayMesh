@@ -7,7 +7,14 @@ const STORAGE_KEY = 'relaymesh_prototype_store_v1';
 
 const INITIAL_STATE = {
   metrics: {
-    activeSOS: 24,
+    affectedCitizens: 128,
+    criticalCases: 24,
+    activeRescueTeams: 18,
+    deployedRescueTeams: 12,
+    availableRescueTeams: 6,
+    respondingRescueTeams: 7,
+    offlineRescueTeams: 2,
+    activeSOS: 9,
     activeIncidents: 4,
     criticalIncidents: 2,
     activeNodes: 184,
@@ -16,6 +23,153 @@ const INITIAL_STATE = {
     availableResources: 126,
     availableShelterCapacity: 1240
   },
+  activeEmergencies: [
+    {
+      id: 'CASE-RM-1042',
+      caseId: 'CASE #RM-1042',
+      severity: 'CRITICAL',
+      location: 'Colombo Fort',
+      locationName: 'Colombo Fort, Sector 1',
+      affected: 3,
+      timeAgo: '4 min ago',
+      responseStatus: 'Awaiting response',
+      status: 'ACTIVE',
+      latitude: 6.9320,
+      longitude: 79.8550
+    },
+    {
+      id: 'CASE-RM-1039',
+      caseId: 'CASE #RM-1039',
+      severity: 'CRITICAL',
+      location: 'Maradana',
+      locationName: 'Maradana Junction',
+      affected: 6,
+      timeAgo: '7 min ago',
+      responseStatus: 'Team dispatched',
+      status: 'ACTIVE',
+      latitude: 6.9240,
+      longitude: 79.8700
+    },
+    {
+      id: 'CASE-RM-1035',
+      caseId: 'CASE #RM-1035',
+      severity: 'HIGH',
+      location: 'Dematagoda',
+      locationName: 'Dematagoda Cross St',
+      affected: 2,
+      timeAgo: '11 min ago',
+      responseStatus: 'In progress',
+      status: 'ACTIVE',
+      latitude: 6.9290,
+      longitude: 79.8830
+    },
+    {
+      id: 'CASE-RM-1028',
+      caseId: 'CASE #RM-1028',
+      severity: 'HIGH',
+      location: 'Riverside Basin',
+      locationName: 'Kelani Riverside Zone 4',
+      affected: 5,
+      timeAgo: '15 min ago',
+      responseStatus: 'Team dispatched',
+      status: 'ACTIVE',
+      latitude: 6.9448,
+      longitude: 79.8745
+    },
+    {
+      id: 'CASE-RM-1022',
+      caseId: 'CASE #RM-1022',
+      severity: 'MODERATE',
+      location: 'Borella Sector',
+      locationName: 'Borella Cross Road',
+      affected: 2,
+      timeAgo: '22 min ago',
+      responseStatus: 'En route',
+      status: 'ACTIVE',
+      latitude: 6.9155,
+      longitude: 79.8815
+    }
+  ],
+  rescueTeams: [
+    {
+      id: 'TEAM-R-07',
+      teamId: 'TEAM R-07',
+      callsign: 'R-07',
+      name: 'Alpha Search & Rescue Unit',
+      status: 'DEPLOYED',
+      location: 'Colombo Fort',
+      members: 4,
+      assignment: 'CASE #RM-1042',
+      eta: '8 min',
+      latitude: 6.9310,
+      longitude: 79.8560
+    },
+    {
+      id: 'TEAM-R-02',
+      teamId: 'TEAM R-02',
+      callsign: 'R-02',
+      name: 'Swiftwater Boat Unit Beta',
+      status: 'DEPLOYED',
+      location: 'Riverside Basin',
+      members: 5,
+      assignment: 'CASE #RM-1028',
+      eta: '12 min',
+      latitude: 6.9460,
+      longitude: 79.8760
+    },
+    {
+      id: 'TEAM-R-05',
+      teamId: 'TEAM R-05',
+      callsign: 'R-05',
+      name: 'Urban Extraction Team Gamma',
+      status: 'RESPONDING',
+      location: 'Maradana',
+      members: 4,
+      assignment: 'CASE #RM-1039',
+      eta: '5 min',
+      latitude: 6.9230,
+      longitude: 79.8680
+    },
+    {
+      id: 'TEAM-R-01',
+      teamId: 'TEAM R-01',
+      callsign: 'R-01',
+      name: 'Trauma Paramedic Delta',
+      status: 'AVAILABLE',
+      location: 'Grandpass Depot',
+      members: 4,
+      assignment: 'On Standby',
+      eta: 'Immediate',
+      latitude: 6.9500,
+      longitude: 79.8710
+    },
+    {
+      id: 'TEAM-R-03',
+      teamId: 'TEAM R-03',
+      callsign: 'R-03',
+      name: 'First Response Unit Epsilon',
+      status: 'AVAILABLE',
+      location: 'Pettah Base',
+      members: 3,
+      assignment: 'On Standby',
+      eta: 'Immediate',
+      latitude: 6.9385,
+      longitude: 79.8735
+    },
+    {
+      id: 'TEAM-R-08',
+      teamId: 'TEAM R-08',
+      callsign: 'R-08',
+      name: 'Mobile Communications Team',
+      status: 'AVAILABLE',
+      location: 'Hill Tower Station',
+      members: 4,
+      assignment: 'On Standby',
+      eta: 'Immediate',
+      latitude: 6.9200,
+      longitude: 79.8600
+    }
+  ],
   incidents: [
     {
       id: 'INC-101',

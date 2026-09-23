@@ -18,8 +18,8 @@
   --border-focus: #15803D;
 
   /* Typography */
-  --text-primary: #0F172A;
-  --text-secondary: #334155;
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
   --text-muted: #64748B;
   --text-light: #94A3B8;
 
@@ -114,7 +114,7 @@ body {
 }
 
 .top-header-left { display: flex; align-items: center; }
-.top-brand-title { font-weight: 900; font-size: 1.05rem; letter-spacing: -0.01em; color: #0F172A; }
+.top-brand-title { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; color: #1E293B; }
 .top-separator { color: var(--text-light); font-weight: 300; margin: 0 0.35rem; }
 .top-app-title { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
 
@@ -915,21 +915,21 @@ body {
    ========================================================================== */
 
 :root {
-  --donezo-forest: #164E37;
-  --donezo-forest-hover: #0E3B27;
-  --donezo-forest-light: #1E5B42;
-  --donezo-mint: #38A169;
-  --donezo-mint-light: #E8F8EE;
-  --donezo-mint-border: #C8F0D8;
-  --donezo-bg: #F4F5F6;
+  --donezo-forest: #059669;
+  --donezo-forest-hover: #047857;
+  --donezo-forest-light: #10B981;
+  --donezo-mint: #10B981;
+  --donezo-mint-light: #ECFDF5;
+  --donezo-mint-border: #A7F3D0;
+  --donezo-bg: #F8FAFC;
   --donezo-card: #FFFFFF;
-  --donezo-border: #EBECEF;
-  --donezo-text-main: #111827;
-  --donezo-text-muted: #6B7280;
-  --donezo-text-light: #9CA3AF;
-  --donezo-radius-lg: 24px;
-  --donezo-radius-md: 18px;
-  --donezo-radius-sm: 12px;
+  --donezo-border: #E2E8F0;
+  --donezo-text-main: #1E293B;
+  --donezo-text-muted: #64748B;
+  --donezo-text-light: #94A3B8;
+  --donezo-radius-lg: 16px;
+  --donezo-radius-md: 12px;
+  --donezo-radius-sm: 8px;
   --donezo-radius-pill: 9999px;
 }
 
@@ -950,7 +950,8 @@ body {
   background-color: var(--donezo-bg);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 0.5rem;
   padding: 1.75rem 1.25rem 1.5rem 1.5rem;
   border-right: 1px solid rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
@@ -972,9 +973,9 @@ body {
 }
 
 .donezo-brand-text {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: var(--donezo-forest);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1E293B;
   letter-spacing: -0.02em;
 }
 
@@ -1027,8 +1028,8 @@ body {
 .donezo-nav-btn.active {
   background-color: #FFFFFF;
   color: var(--donezo-text-main);
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .donezo-nav-active-indicator {
@@ -1052,13 +1053,20 @@ body {
 }
 
 .donezo-nav-badge {
-  background-color: #111827;
-  color: #FFFFFF;
+  background-color: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 600;
   padding: 0.15rem 0.45rem;
   border-radius: 9999px;
   line-height: 1.2;
+}
+
+.donezo-nav-badge.critical-badge {
+  background-color: #DC2626;
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.4);
 }
 
 /* Sidebar App Promo Card */
@@ -1296,7 +1304,7 @@ body {
 
 .donezo-user-name {
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--donezo-text-main);
   line-height: 1.2;
 }
@@ -1324,8 +1332,8 @@ body {
 }
 
 .donezo-page-title {
-  font-size: 1.85rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--donezo-text-main);
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -1348,21 +1356,22 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background-color: var(--donezo-forest);
+  background-color: #2563EB;
   color: #FFFFFF;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.6rem 1.35rem;
+  font-size: 0.82rem;
+  font-weight: 550;
+  padding: 0.55rem 1.25rem;
   border-radius: var(--donezo-radius-pill);
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(22, 78, 55, 0.2);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
 }
 
 .donezo-btn-primary:hover {
-  background-color: var(--donezo-forest-hover);
+  background-color: #1D4ED8;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
 .donezo-btn-outline {
@@ -1409,8 +1418,10 @@ body {
 }
 
 .donezo-kpi-featured {
-  background-color: var(--donezo-forest);
-  color: #FFFFFF;
+  background-color: #FFFFFF;
+  border: 1px solid var(--donezo-border);
+  color: var(--donezo-text-main);
+  border-top: 3px solid #10B981;
 }
 
 .donezo-kpi-white {
@@ -1427,11 +1438,32 @@ body {
 .donezo-kpi-label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: inherit;
+  color: var(--donezo-text-muted);
 }
 
 .donezo-kpi-featured .donezo-kpi-label {
-  color: #E2E8F0;
+  color: var(--donezo-text-muted);
+}
+
+.donezo-kpi-featured .donezo-kpi-number {
+  color: var(--donezo-text-main);
+}
+
+.donezo-kpi-featured .donezo-kpi-pill-badge {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.donezo-kpi-featured .donezo-badge-square {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.donezo-kpi-featured .donezo-kpi-arrow-circle {
+  background-color: #F8FAFC;
+  border: 1px solid var(--donezo-border);
+  color: var(--donezo-text-main);
 }
 
 .donezo-kpi-arrow-circle {
@@ -1459,11 +1491,12 @@ body {
 }
 
 .donezo-kpi-number {
-  font-size: 2.25rem;
-  font-weight: 700;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--donezo-text-main);
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin: 0.5rem 0;
+  letter-spacing: -0.01em;
+  margin: 0.4rem 0;
 }
 
 .donezo-kpi-pill-badge {
@@ -2084,17 +2117,19 @@ body {
 }
 
 .donezo-filter-pill-btn.active {
-  background-color: var(--donezo-forest);
-  color: #FFFFFF;
-  border-color: var(--donezo-forest);
-  box-shadow: 0 2px 4px rgba(22, 78, 55, 0.2);
+  background-color: #F1F5F9;
+  color: #1E293B;
+  border-color: #CBD5E1;
+  font-weight: 600;
+  box-shadow: none;
 }
 
 .donezo-filter-pill-btn.active-dark {
-  background-color: var(--donezo-text-main);
-  color: #FFFFFF;
-  border-color: var(--donezo-text-main);
-  box-shadow: 0 2px 4px rgba(17, 24, 39, 0.2);
+  background-color: #F1F5F9;
+  color: #1E293B;
+  border-color: #CBD5E1;
+  font-weight: 600;
+  box-shadow: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -2212,7 +2247,7 @@ body {
 }
 
 .donezo-person-name {
-  font-weight: 650;
+  font-weight: 600;
   color: var(--donezo-text-main);
   font-size: 0.84rem;
 }
@@ -2674,14 +2709,14 @@ body {
 }
 
 .donezo-vol-avatar-circle {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: var(--donezo-mint-light);
   border: 1px solid var(--donezo-mint-border);
   color: var(--donezo-forest);
-  font-size: 0.95rem;
-  font-weight: 900;
+  font-size: 0.85rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2690,14 +2725,15 @@ body {
 
 .donezo-vol-name {
   font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--donezo-text-main);
+  font-weight: 600;
+  color: #1E293B;
 }
 
 .donezo-vol-callsign {
   font-size: 0.72rem;
   font-family: ui-monospace, SFMono-Regular, monospace;
   color: var(--donezo-text-muted);
+  font-weight: 450;
 }
 
 .donezo-vol-specs-table {
@@ -2711,21 +2747,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--donezo-bg);
-  padding: 0.55rem 0.85rem;
-  border-radius: 10px;
+  background-color: #F8FAFC;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
   font-size: 0.75rem;
-  border: 1px solid var(--donezo-border);
+  border: 1px solid #E2E8F0;
 }
 
 .donezo-vol-spec-lbl {
-  font-weight: 700;
-  color: var(--donezo-text-light);
+  font-weight: 500;
+  color: var(--donezo-text-muted);
 }
 
 .donezo-vol-spec-val {
-  font-weight: 800;
-  color: var(--donezo-text-main);
+  font-weight: 500;
+  color: #334155;
 }
 
 .donezo-btn-assign {
@@ -3105,6 +3141,791 @@ body {
   justify-content: center;
   gap: 0.35rem;
 }
+
+/* ==========================================================================
+   RELAYMESH OPERATIONAL EMERGENCY COMMAND CENTER STYLES
+   Simple, Clean, Operational Disaster-Response Overview
+   ========================================================================== */
+
+.command-center-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.command-header-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .command-header-box {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.command-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1E293B;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.command-subtitle {
+  font-size: 0.875rem;
+  color: #64748B;
+  margin-top: 0.25rem;
+}
+
+.command-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.command-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #334155;
+}
+
+.command-status-pill.operational {
+  background: #ECFDF5;
+  color: #065F46;
+  border-color: #A7F3D0;
+}
+
+.command-status-pill.degraded {
+  background: #FFFBEB;
+  color: #92400E;
+  border-color: #FDE68A;
+}
+
+.command-status-pill.offline {
+  background: #F1F5F9;
+  color: #475569;
+  border-color: #CBD5E1;
+}
+
+.command-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 9999px;
+  background: #ECFDF5;
+  color: #047857;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border: 1px solid #A7F3D0;
+}
+
+.command-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  animation: command-pulse 2s infinite;
+}
+
+@keyframes command-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.command-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .command-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .command-metrics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.command-metric-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.command-metric-card:hover {
+  box-shadow: 0 3px 6px -1px rgba(15, 23, 42, 0.08);
+}
+
+.command-metric-card.critical {
+  border-color: #FECACA;
+  background: #FFFFFF;
+}
+
+.command-metric-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.command-metric-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.command-metric-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F1F5F9;
+  color: #475569;
+}
+
+.command-metric-icon-wrap.critical {
+  background: #FEF2F2;
+  color: #E53935;
+}
+
+.command-metric-icon-wrap.teams {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.command-metric-icon-wrap.sos {
+  background: #FFFBEB;
+  color: #D97706;
+}
+
+.command-metric-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.command-metric-value.critical {
+  color: #E53935;
+}
+
+.command-metric-subtext {
+  font-size: 0.8125rem;
+  color: #64748B;
+  margin-top: 0.35rem;
+  font-weight: 500;
+}
+
+.command-metric-subtext.critical {
+  color: #DC2626;
+  font-weight: 600;
+}
+
+/* Sections Layout */
+.command-middle-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .command-middle-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.command-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .command-bottom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Card Shell */
+.command-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.command-card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+}
+
+.command-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.25;
+}
+
+.command-card-subtitle {
+  font-size: 0.75rem;
+  color: #64748B;
+  margin-top: 0.15rem;
+}
+
+/* Map Card */
+.command-map-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1.25rem;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  flex-wrap: wrap;
+}
+
+.command-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.command-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.command-map-wrapper {
+  position: relative;
+  height: 480px;
+  width: 100%;
+}
+
+.command-map-canvas {
+  height: 100%;
+  width: 100%;
+}
+
+/* Leaflet Popups */
+.command-popup {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #0F172A;
+  min-width: 180px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+  border: 1px solid #E2E8F0 !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* Emergencies List */
+.command-emergencies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem 1.25rem;
+  flex: 1;
+}
+
+.command-emergency-row {
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.command-emergency-row:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+}
+
+.command-emergency-row.critical {
+  border-left: 3px solid #E53935;
+}
+
+.command-emergency-row.high {
+  border-left: 3px solid #F59E0B;
+}
+
+.command-emergency-row.moderate {
+  border-left: 3px solid #2563EB;
+}
+
+.command-emergency-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.command-severity-badge {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  letter-spacing: 0.025em;
+}
+
+.command-severity-badge.critical {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.command-severity-badge.high {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.command-severity-badge.moderate {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.command-emergency-case-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.command-emergency-time {
+  font-size: 0.6875rem;
+  color: #94A3B8;
+}
+
+.command-emergency-mid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+
+.command-emergency-location {
+  font-weight: 600;
+  color: #334155;
+}
+
+.command-emergency-affected {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.command-emergency-status {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  width: fit-content;
+  background: #F1F5F9;
+  color: #475569;
+}
+
+.command-emergency-status.awaiting {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.command-emergency-status.dispatched {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.command-emergency-status.progress {
+  background: #FFFBEB;
+  color: #B45309;
+}
+
+.command-card-footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid #F1F5F9;
+  background: #FFFFFF;
+}
+
+.command-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #2563EB;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem 0;
+  transition: color 0.15s ease;
+}
+
+.command-link-btn:hover {
+  color: #1D4ED8;
+  text-decoration: underline;
+}
+
+/* Teams Status Bars */
+.command-teams-content {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+}
+
+.command-team-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.command-team-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+
+.command-team-name {
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.command-team-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.command-team-count {
+  font-weight: 800;
+  color: #0F172A;
+  font-family: ui-monospace, monospace;
+}
+
+.command-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.command-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Network Card Content */
+.command-network-content {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.command-network-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+}
+
+.command-network-label {
+  font-size: 0.8125rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.command-network-val {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.command-network-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.command-network-stat-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.command-network-stat-num {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.2;
+}
+
+.command-network-stat-lbl {
+  font-size: 0.6875rem;
+  color: #64748B;
+  margin-top: 0.25rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* --------------------------------------------------------------------------
+   STRUCTURED SITUATION MAP STYLES (DONEZO THEME)
+   -------------------------------------------------------------------------- */
+
+.donezo-brand-text-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.donezo-brand-sub {
+  font-size: 0.65rem;
+  font-weight: 750;
+  color: var(--donezo-forest);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.map-situation-banner {
+  background-color: #FFFFFF;
+  border: 1px solid var(--donezo-border);
+  border-radius: var(--donezo-radius-md);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  flex-wrap: wrap;
+}
+
+.map-ticker-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.map-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--donezo-radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.map-pulse-dot-red {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #DC2626;
+}
+
+.map-ticker-title {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--donezo-text-main);
+}
+
+.map-ticker-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.map-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--donezo-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.map-stat-pill.critical {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border-color: #FECACA;
+}
+
+.map-stat-pill.urgent {
+  background-color: #FEF3C7;
+  color: #B45309;
+  border-color: #FDE68A;
+}
+
+.map-stat-pill.teams {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
+.map-stat-pill.nodes {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border-color: #A7F3D0;
+}
+
+.map-filter-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--donezo-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-right: 0.25rem;
+}
+
+.map-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--donezo-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--donezo-border);
+  background-color: #FFFFFF;
+  color: var(--donezo-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-filter-btn:hover {
+  background-color: #F4F5F6;
+  color: var(--donezo-text-main);
+}
+
+.map-filter-btn.active {
+  background-color: #F1F5F9;
+  color: #1E293B;
+  border-color: #CBD5E1;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.map-filter-btn.active.critical {
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border-color: #FECACA;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.map-filter-btn.active.teams {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  border-color: #BFDBFE;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.map-filter-btn.active.nodes {
+  background-color: #ECFDF5;
+  color: #059669;
+  border-color: #A7F3D0;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.tactical-marker-clean {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tactical-marker-pill {
+  color: #FFFFFF;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.01em;
+  border: 1.5px solid #FFFFFF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
 
 
 

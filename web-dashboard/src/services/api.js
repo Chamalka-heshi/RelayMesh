@@ -82,20 +82,26 @@ export const api = {
         data: {
           metrics: state.metrics,
           incidents: state.incidents,
+          activeEmergencies: state.activeEmergencies,
+          rescueTeams: state.rescueTeams,
           networkHealth: {
-            status: 'ONLINE',
+            status: state.networkHealth?.status || 'OPERATIONAL',
+            connectedNodes: state.networkHealth?.connectedNodes || 42,
+            activeLinks: state.networkHealth?.activeLinks || 68,
+            coveragePct: state.networkHealth?.coveragePct || 92,
             onlineNodes: state.metrics.activeNodes,
             offlineNodes: 19,
             totalNodes: 203,
             availabilityPct: 91,
-            coveragePct: 94,
             messagesHourly: 1420,
-            lastSync: '4 sec ago'
+            lastSync: 'just now'
           },
           activities: state.auditLogs,
           mapData: {
             alerts: state.sosAlerts.filter(s => s.status === 'ACTIVE' || s.status === 'DISPATCHED'),
+            activeEmergencies: state.activeEmergencies,
             volunteers: state.volunteers,
+            rescueTeams: state.rescueTeams,
             resources: state.resources,
             nodes: [
               { id: 'RM-84F2', type: 'GATEWAY', status: 'ONLINE', latitude: 6.9450, longitude: 79.8750, messagesHandled: 482, battery: 100 },

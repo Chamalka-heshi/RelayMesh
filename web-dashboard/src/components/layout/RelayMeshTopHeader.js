@@ -5,10 +5,14 @@ export default function RelayMeshTopHeader({ user, onLogout }) {
   return (
     <header className="donezo-top-header">
       {/* Left Section: Offline. Connected. Together. Badge */}
-      <div className="donezo-header-left-section">
+      <div className="donezo-header-left-section flex items-center gap-3">
         <div className="donezo-slogan-pill">
           <span className="donezo-slogan-dot" />
           <span className="donezo-slogan-text">Offline. Connected. Together.</span>
+        </div>
+        <div className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-slate-500 pl-3 border-l border-slate-200">
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Disaster Operations Active</span>
         </div>
       </div>
 

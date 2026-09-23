@@ -42,7 +42,6 @@ export const BottomNav: React.FC<Props> = ({ activeTab, onTabPress, onSOSPress }
     <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.tabContainer}>
         {renderTab('home', 'Home', 'home')}
-        {renderTab('map', 'Map', 'map')}
 
         {/* Elevated Center SOS Button */}
         <View style={styles.sosContainer}>
@@ -55,7 +54,6 @@ export const BottomNav: React.FC<Props> = ({ activeTab, onTabPress, onSOSPress }
           </TouchableOpacity>
         </View>
 
-        {renderTab('messages', 'Chat', 'message-square')}
         {renderTab('profile', 'Profile', 'user')}
       </View>
     </View>
@@ -78,7 +76,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     paddingHorizontal: 16,
   },

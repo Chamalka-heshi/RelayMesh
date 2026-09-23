@@ -9,6 +9,7 @@ import {
   TouchableOpacity, 
   Alert 
 } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { Header, Card, Button, StatusBadge, Colors, Typography } from '../../../shared';
 import { useAuth } from '../../../context';
 
@@ -53,6 +54,15 @@ export const Screen23_UserProfile: React.FC<Props> = ({ onBackPress }) => {
   const handleSaveProfile = async () => {
     if (!editName.trim()) {
       Alert.alert('Validation Error', 'Name cannot be empty.');
+      return;
+    }
+
+    const networkState = await NetInfo.fetch();
+    if (!networkState.isConnected) {
+      Alert.alert(
+        'Offline',
+        'You must have an active internet connection to save profile changes to the central command server.'
+      );
       return;
     }
 

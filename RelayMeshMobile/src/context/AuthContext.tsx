@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
+import { database } from '../database';
 
 export interface UserProfile {
   id?: string;
@@ -164,53 +165,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const cleanEmail = email.trim().toLowerCase();
       const nodeId = generateNodeId();
-      const newId = 'usr-' + Date.now().toString();
 
-      const newRecord = {
-        id: newId,
+      // 1. Register with Supabase
+      const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
-        fullName: fullName.trim(),
-        role,
-        nodeId,
-        phone: phone || '',
-        bloodGroup: 'O+ Positive',
-        medicalNotes: 'None specified',
-        emergencyContact: '+94 77 123 4567',
-      };
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            role,
+            node_id: nodeId,
+            phone: phone || '',
+          },
+        },
+      });
 
-      // Save to local registry
-      const storedUsersRaw = await AsyncStorage.getItem(LOCAL_USERS_DB_KEY);
-      const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-      registeredUsers.push(newRecord);
-      await AsyncStorage.setItem(LOCAL_USERS_DB_KEY, JSON.stringify(registeredUsers));
+      if (error) throw error;
+      if (!data.user) throw new Error('User creation failed. No user returned.');
 
-      // Auto login newly registered user
+      const newId = data.user.id; // Generated UUID from Supabase
+
+      // 2. Save to local WatermelonDB
+      await database.write(async () => {
+        const userProfilesCollection = database.get('user_profiles');
+        await userProfilesCollection.create((record: any) => {
+          record._raw.id = newId; // Override WatermelonDB ID with Supabase UUID
+          record.deviceId = newId;
+          record.name = fullName.trim();
+          record.email = cleanEmail;
+          record.role = role;
+          record.publicKey = 'pending-key'; // Generated later for E2EE
+        });
+      });
+
+      // 3. Construct local profile
       const registeredUser: any = {
         id: newId,
         email: cleanEmail,
         user_metadata: {
-          full_name: newRecord.fullName,
-          role: newRecord.role,
-          node_id: newRecord.nodeId,
-          phone: newRecord.phone,
+          full_name: fullName.trim(),
+          role: role,
+          node_id: nodeId,
+          phone: phone || '',
         },
       };
 
       const registeredProfile: UserProfile = {
         id: newId,
         email: cleanEmail,
-        fullName: newRecord.fullName,
-        role: newRecord.role,
-        nodeId: newRecord.nodeId,
-        phone: newRecord.phone,
-        bloodGroup: newRecord.bloodGroup,
-        medicalNotes: newRecord.medicalNotes,
-        emergencyContact: newRecord.emergencyContact,
+        fullName: fullName.trim(),
+        role: role,
+        nodeId: nodeId,
+        phone: phone || '',
+        bloodGroup: 'O+ Positive', // Default fallback values
+        medicalNotes: 'None specified',
+        emergencyContact: '+94 77 123 4567',
       };
 
+      // 4. Update AuthContext state
       setUser(registeredUser);
       setProfile(registeredProfile);
+      if (data.session) setSession(data.session);
+
       await AsyncStorage.setItem(
         LOCAL_USER_KEY,
         JSON.stringify({ user: registeredUser, profile: registeredProfile })
@@ -218,6 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { error: null, message: 'Account created successfully!' };
     } catch (err: any) {
+      console.error('Registration error:', err);
       return { error: err.message || 'Registration failed.' };
     }
   };
@@ -236,20 +253,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (updated: Partial<UserProfile>) => {
     try {
       if (!profile) return { error: 'No profile found' };
+      if (!user) return { error: 'Not authenticated with remote database' };
 
+      // 1. Sync with Supabase Auth Metadata
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          full_name: updated.fullName || profile.fullName,
+          phone: updated.phone || profile.phone,
+          blood_group: updated.bloodGroup || profile.bloodGroup,
+          medical_notes: updated.medicalNotes || profile.medicalNotes,
+          emergency_contact: updated.emergencyContact || profile.emergencyContact,
+        }
+      });
+
+      if (error) throw error;
+
+      // 2. Sync with local WatermelonDB
+      await database.write(async () => {
+        const userProfilesCollection = database.get('user_profiles');
+        const records = await userProfilesCollection.query().fetch();
+        const localRecord = records.find((r: any) => r.deviceId === user.id);
+        
+        if (localRecord) {
+          await localRecord.update((record: any) => {
+            if (updated.fullName) record.name = updated.fullName;
+          });
+        }
+      });
+
+      // 3. Update local React state and AsyncStorage
       const newProfile: UserProfile = {
         ...profile,
         ...updated,
       };
 
       setProfile(newProfile);
+      if (data.user) {
+        setUser(data.user);
+      }
+      
       await AsyncStorage.setItem(
         LOCAL_USER_KEY,
-        JSON.stringify({ user, profile: newProfile })
+        JSON.stringify({ user: data.user || user, profile: newProfile })
       );
 
       return { error: null };
     } catch (err: any) {
+      console.error('Update profile error:', err);
       return { error: err.message || 'Failed to update profile' };
     }
   };

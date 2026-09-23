@@ -11,6 +11,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import NetInfo from '@react-native-community/netinfo';
 import { Colors } from '../../../shared';
 import { useAuth } from '../../../context';
 
@@ -33,21 +34,26 @@ export const Screen25_Register: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRegister = async () => {
-    if (!name.trim()) {
-      Alert.alert('Validation Error', 'Please enter your full name.');
+    setErrorMessage(null);
+
+    if (!name.trim() || !email.trim() || !password) {
+      setErrorMessage('Please fill in all required fields.');
       return;
     }
-    if (!email.trim()) {
-      Alert.alert('Validation Error', 'Please enter your email address.');
-      return;
-    }
-    if (!password || password.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters.');
+    if (password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters.');
       return;
     }
 
     setLoading(true);
-    setErrorMessage(null);
+
+    // Explicit Network Check
+    const networkState = await NetInfo.fetch();
+    if (!networkState.isConnected) {
+      setLoading(false);
+      setErrorMessage('No Internet Connection. Registration requires internet access to sync with the central database.');
+      return;
+    }
 
     const result = await signUp({
       email: email.trim(),

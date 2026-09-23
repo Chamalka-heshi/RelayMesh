@@ -79,181 +79,42 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Mesh Network Connection Status Card */}
-      <Card variant="accentGreen" style={styles.statusCard}>
-        <View style={styles.statusHeader}>
-          <View>
-            <Text style={[Typography.captionBold, { color: Colors.primary }]}>
-              MESH NETWORK STATUS
-            </Text>
-            <Text style={[Typography.h2, { color: Colors.primaryDark, marginTop: 2 }]}>
-              Connected
-            </Text>
-          </View>
-          <StatusBadge status="connected" label="12 Nearby Nodes" />
-        </View>
-
-        <View style={styles.statusDetailsRow}>
-          <View style={styles.statusCol}>
-            <Text style={styles.statusColVal}>12</Text>
-            <Text style={styles.statusColLbl}>Peers</Text>
-          </View>
-          <View style={styles.statusCol}>
-            <Text style={styles.statusColVal}>5</Text>
-            <Text style={styles.statusColLbl}>Relays</Text>
-          </View>
-          <View style={styles.statusCol}>
-            <Text style={styles.statusColVal}>94%</Text>
-            <Text style={styles.statusColLbl}>Battery</Text>
-          </View>
-          <View style={styles.statusCol}>
-            <Text style={styles.statusColVal}>-64 dBm</Text>
-            <Text style={styles.statusColLbl}>Signal</Text>
-          </View>
-        </View>
-      </Card>
-
-      {/* Prominent SOS Action Banner */}
-      <TouchableOpacity
-        style={[
-          styles.sosBanner,
-          activeSOS && { backgroundColor: Colors.sosRed, borderColor: '#FFFFFF', borderWidth: 1 },
-        ]}
-        onPress={onSOSPress}
-        activeOpacity={0.85}
-      >
-        <View style={styles.sosBannerLeft}>
-          <View
-            style={[
-              styles.sosMiniCircle,
-              activeSOS && { backgroundColor: '#FFFFFF' },
-            ]}
-          >
-            <Text
-              style={[
-                styles.sosMiniText,
-                activeSOS && { color: Colors.sosRed, fontWeight: '900' },
-              ]}
-            >
-              {activeSOS ? '🚨' : 'SOS'}
-            </Text>
-          </View>
-          <View style={styles.sosTextCol}>
-            <Text style={styles.sosBannerTitle}>
-              {activeSOS ? `ACTIVE SOS: ${activeSOS.id}` : 'Emergency SOS Distress'}
-            </Text>
-            <Text style={styles.sosBannerSub}>
-              {activeSOS
-                ? `Distress beacon active • ${activeSOS.nodesNotified} mesh nodes relaying`
-                : 'One-tap broadcast to rescue teams & nearby nodes'}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.sosChevron}>➔</Text>
-      </TouchableOpacity>
-
-      {/* Quick Action Grid (6 Modules) */}
-      <Text style={[Typography.h3, styles.sectionTitle]}>Quick Navigation</Text>
-
-      <View style={styles.grid}>
-        {/* Map Card */}
-        <TouchableOpacity
-          style={styles.gridCard}
-          onPress={() => onNavigate('map')}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.gridIconCircle, { backgroundColor: '#E8F5EC' }]}>
-            <Text style={styles.gridIcon}>🗺️</Text>
-          </View>
-          <Text style={Typography.bodyBold}>Offline Map</Text>
-          <Text style={Typography.caption}>Shelters & Water</Text>
-        </TouchableOpacity>
-
-        {/* SOS Card */}
-        <TouchableOpacity
-          style={[
-            styles.gridCard,
-            activeSOS && { borderColor: Colors.sosRed, borderWidth: 1.5 },
-          ]}
-          onPress={onSOSPress}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.gridIconCircle, { backgroundColor: Colors.sosRedLight }]}>
-            <Text style={styles.gridIcon}>🚨</Text>
-          </View>
-          <Text style={[Typography.bodyBold, { color: Colors.sosRed }]}>
-            {activeSOS ? 'SOS Active' : 'SOS Alert'}
-          </Text>
-          <Text style={Typography.caption}>
-            {activeSOS ? 'Track Rescue' : 'Distress Beacon'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Chat / Messages Card */}
-        <TouchableOpacity
-          style={styles.gridCard}
-          onPress={() => onNavigate('messages')}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.gridIconCircle, { backgroundColor: '#DBEAFE' }]}>
-            <Text style={styles.gridIcon}>💬</Text>
-          </View>
-          <Text style={Typography.bodyBold}>Messages</Text>
-          <Text style={Typography.caption}>P2P Mesh Chat</Text>
-        </TouchableOpacity>
-
-        {/* Resources Card */}
-        <TouchableOpacity
-          style={styles.gridCard}
-          onPress={() => onNavigate('resources')}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.gridIconCircle, { backgroundColor: '#FFEDD5' }]}>
-            <Text style={styles.gridIcon}>📦</Text>
-          </View>
-          <Text style={Typography.bodyBold}>Relief Directory</Text>
-          <Text style={Typography.caption}>Food & Medical</Text>
-        </TouchableOpacity>
-
-        {/* Mesh Network Card */}
-        <TouchableOpacity
-          style={styles.gridCard}
-          onPress={() => onNavigate('mesh')}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.gridIconCircle, { backgroundColor: '#E8F5EC' }]}>
-            <Text style={styles.gridIcon}>🕸️</Text>
-          </View>
-          <Text style={Typography.bodyBold}>Mesh Topology</Text>
-          <Text style={Typography.caption}>12 Active Peers</Text>
-        </TouchableOpacity>
-
-        {/* Settings Card */}
-        <TouchableOpacity
-          style={styles.gridCard}
-          onPress={() => onNavigate('settings')}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.gridIconCircle, { backgroundColor: Colors.surfaceSecondary }]}>
-            <Text style={styles.gridIcon}>⚙️</Text>
-          </View>
-          <Text style={Typography.bodyBold}>Settings</Text>
-          <Text style={Typography.caption}>Radio & Storage</Text>
-        </TouchableOpacity>
+      {/* System Status */}
+      <View style={{ alignItems: 'center', marginTop: 40, marginBottom: 40 }}>
+        <Text style={[Typography.h3, { color: Colors.textSecondary, marginBottom: 8 }]}>System Ready</Text>
+        <Text style={[Typography.body, { color: Colors.textSecondary, textAlign: 'center', paddingHorizontal: 40 }]}>
+          Tap the SOS button below if you are in an emergency. Ensure your profile is up to date.
+        </Text>
       </View>
 
-      {/* Recent Hazard / Emergency Broadcast Banner */}
-      <Card style={styles.alertCard}>
-        <View style={styles.alertHeader}>
-          <Text style={[Typography.bodyBold, { color: Colors.warning }]}>
-            ⚠️ Flood Hazard Warning
-          </Text>
-          <Text style={Typography.caption}>12 mins ago</Text>
-        </View>
-        <Text style={[Typography.caption, { marginTop: 4 }]}>
-          Sector 2 bridge road is flooded (1.5m depth). Safe bypass route via Hill Road is active on offline map.
-        </Text>
-      </Card>
+      {/* Prominent SOS Action Banner - ONLY show if SOS is active */}
+      {activeSOS && (
+        <TouchableOpacity
+          style={[
+            styles.sosBanner,
+            { backgroundColor: Colors.sosRed, borderColor: '#FFFFFF', borderWidth: 1 },
+          ]}
+          onPress={onSOSPress}
+          activeOpacity={0.85}
+        >
+          <View style={styles.sosBannerLeft}>
+            <View style={[styles.sosMiniCircle, { backgroundColor: '#FFFFFF' }]}>
+              <Text style={[styles.sosMiniText, { color: Colors.sosRed, fontWeight: '900' }]}>
+                🚨
+              </Text>
+            </View>
+            <View style={styles.sosTextCol}>
+              <Text style={styles.sosBannerTitle}>
+                ACTIVE SOS: {activeSOS.id}
+              </Text>
+              <Text style={styles.sosBannerSub}>
+                Distress beacon active • {activeSOS.nodesNotified} mesh nodes relaying
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.sosChevron}>➔</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 };

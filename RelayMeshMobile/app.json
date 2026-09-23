@@ -6,15 +6,18 @@
     "orientation": "portrait",
     "scheme": "relaymesh",
     "userInterfaceStyle": "light",
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
       "package": "com.relaymeshmobile"
     },
+
     "plugins": [
       [
-        "@config-plugins/react-native-ble-plx",
+        "react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
           "modes": ["peripheral", "central"],

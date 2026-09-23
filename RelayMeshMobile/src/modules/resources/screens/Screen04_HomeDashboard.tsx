@@ -5,8 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
-import { Card, StatusBadge, Colors, Typography } from '../../../shared';
+import { Colors } from '../../../shared';
 import { useAuth } from '../../../context';
 import { sosService, SOSAlert } from '../../sos';
 
@@ -40,79 +41,65 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
 
   const displayName = profile?.fullName || user?.email?.split('@')[0] || 'Relay User';
   const displayRole = profile?.role === 'volunteer' ? 'Volunteer Rescuer' : 'Citizen Responder';
-  const displayNodeId = profile?.nodeId || '#RM-4587';
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Top Green Brand Bar with User Details */}
-      <View style={styles.topGreenCard}>
-        <View style={styles.topRow}>
-          <View style={styles.brandGroup}>
-            <Text style={styles.brandIcon}>📡</Text>
-            <View>
-              <Text style={styles.brandTitle}>RelayMesh</Text>
-              <Text style={styles.brandSubtitle}>Offline P2P Mesh Network</Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={styles.profileAvatar}
-            onPress={() => onNavigate('profile')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.avatarText}>{getInitials(displayName)}</Text>
-          </TouchableOpacity>
+      
+      {/* iOS Style Profile Widget */}
+      <TouchableOpacity 
+        style={styles.iosWidgetCard}
+        onPress={() => onNavigate('profile')}
+        activeOpacity={0.8}
+      >
+        <View style={styles.widgetHeader}>
+          <Text style={styles.widgetTitle}>Profile</Text>
+          <Text style={styles.widgetActionText}>Edit</Text>
         </View>
-
-        {/* User Identity Banner */}
-        <TouchableOpacity 
-          style={styles.userBar}
-          onPress={() => onNavigate('profile')}
-          activeOpacity={0.8}
-        >
-          <View>
-            <Text style={styles.welcomeText}>Hello, {displayName}</Text>
-            <Text style={styles.userRoleText}>{displayRole} • Node: {displayNodeId}</Text>
+        <View style={styles.profileContent}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>{getInitials(displayName)}</Text>
           </View>
-          <View style={styles.activeTag}>
-            <Text style={styles.activeTagText}>ACTIVE NODE</Text>
+          <View style={styles.profileTextGroup}>
+            <Text style={styles.profileName}>{displayName}</Text>
+            <Text style={styles.profileRole}>{displayRole}</Text>
           </View>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
 
-      {/* System Status */}
-      <View style={{ alignItems: 'center', marginTop: 40, marginBottom: 40 }}>
-        <Text style={[Typography.h3, { color: Colors.textSecondary, marginBottom: 8 }]}>System Ready</Text>
-        <Text style={[Typography.body, { color: Colors.textSecondary, textAlign: 'center', paddingHorizontal: 40 }]}>
-          Tap the SOS button below if you are in an emergency. Ensure your profile is up to date.
+      {/* iOS Style System Status Widget */}
+      <View style={styles.iosWidgetCard}>
+        <View style={styles.widgetHeader}>
+          <Text style={styles.widgetTitle}>System Status</Text>
+        </View>
+        <View style={styles.statusContent}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusTextPrimary}>Ready for Emergency</Text>
+        </View>
+        <Text style={styles.statusTextSecondary}>
+          Tap the SOS button below to broadcast an emergency distress signal to nearby mesh nodes.
         </Text>
       </View>
 
       {/* Prominent SOS Action Banner - ONLY show if SOS is active */}
       {activeSOS && (
         <TouchableOpacity
-          style={[
-            styles.sosBanner,
-            { backgroundColor: Colors.sosRed, borderColor: '#FFFFFF', borderWidth: 1 },
-          ]}
+          style={styles.sosBanner}
           onPress={onSOSPress}
           activeOpacity={0.85}
         >
           <View style={styles.sosBannerLeft}>
-            <View style={[styles.sosMiniCircle, { backgroundColor: '#FFFFFF' }]}>
-              <Text style={[styles.sosMiniText, { color: Colors.sosRed, fontWeight: '900' }]}>
-                🚨
-              </Text>
+            <View style={styles.sosMiniCircle}>
+              <Text style={styles.sosMiniText}>🚨</Text>
             </View>
             <View style={styles.sosTextCol}>
               <Text style={styles.sosBannerTitle}>
                 ACTIVE SOS: {activeSOS.id}
               </Text>
               <Text style={styles.sosBannerSub}>
-                Distress beacon active • {activeSOS.nodesNotified} mesh nodes relaying
+                Distress beacon active • {activeSOS.nodesNotified} nodes relaying
               </Text>
             </View>
           </View>
-          <Text style={styles.sosChevron}>➔</Text>
         </TouchableOpacity>
       )}
     </ScrollView>
@@ -122,124 +109,108 @@ export const Screen04_HomeDashboard: React.FC<Props> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#F2F2F7', // iOS Grouped background
   },
   content: {
     padding: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 40,
   },
-  topGreenCard: {
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
+  iosWidgetCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
+    // iOS standard subtle shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  brandGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  brandIcon: {
-    fontSize: 28,
-    marginRight: 10,
-  },
-  brandTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  brandSubtitle: {
-    color: '#E8F5EC',
-    fontSize: 11,
-  },
-  profileAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 14,
-  },
-  userBar: {
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  widgetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 16,
   },
-  welcomeText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  userRoleText: {
-    color: '#E8F5EC',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  activeTag: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  activeTagText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
+  widgetTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    color: '#8E8E93',
     letterSpacing: 0.5,
   },
-  statusCard: {
-    marginVertical: 4,
-    padding: 14,
+  widgetActionText: {
+    fontSize: 15,
+    color: '#007AFF', // iOS Blue
+    fontWeight: '500',
   },
-  statusHeader: {
+  profileContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  statusDetailsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  statusCol: {
+  avatarCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#E5E5EA',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
   },
-  statusColVal: {
-    fontSize: 16,
+  avatarText: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#8E8E93',
+  },
+  profileTextGroup: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 22,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: '#000000',
+    marginBottom: 4,
   },
-  statusColLbl: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    marginTop: 2,
+  profileRole: {
+    fontSize: 15,
+    color: '#8E8E93',
+  },
+  statusContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#34C759', // iOS Green
+    marginRight: 10,
+  },
+  statusTextPrimary: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  statusTextSecondary: {
+    fontSize: 15,
+    color: '#8E8E93',
+    lineHeight: 20,
   },
   sosBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.sosRed,
-    borderRadius: 14,
-    padding: 14,
-    marginVertical: 12,
+    backgroundColor: '#FF3B30', // iOS Red
+    borderRadius: 20,
+    padding: 16,
+    marginTop: 8,
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
   sosBannerLeft: {
     flexDirection: 'row',
@@ -247,75 +218,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sosMiniCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   sosMiniText: {
-    color: Colors.sosRed,
-    fontWeight: '900',
-    fontSize: 13,
+    fontSize: 20,
   },
   sosTextCol: {
     flex: 1,
   },
   sosBannerTitle: {
     color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   sosBannerSub: {
-    color: '#FEE2E2',
-    fontSize: 11,
-    marginTop: 2,
-  },
-  sosChevron: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-    marginLeft: 8,
-  },
-  sectionTitle: {
-    marginBottom: 10,
-    marginTop: 4,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  gridCard: {
-    width: '48%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  gridIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  gridIcon: {
-    fontSize: 20,
-  },
-  alertCard: {
-    marginTop: 4,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.warning,
-  },
-  alertHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 13,
   },
 });

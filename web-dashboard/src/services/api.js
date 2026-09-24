@@ -186,6 +186,16 @@ export const api = {
     }
   },
 
+  createSOS: async (payload) => {
+    try {
+      const res = await apiClient.post('/sos', payload);
+      return res.data;
+    } catch (e) {
+      const created = mockDataStore.createSOS(payload);
+      return { success: true, data: created };
+    }
+  },
+
   // Volunteers
   getVolunteers: async (status = 'ALL') => {
     try {
@@ -199,6 +209,15 @@ export const api = {
         list = list.filter(v => v.status === status);
       }
       return { success: true, data: list };
+    }
+  },
+
+  getVolunteerNotifications: async (volunteerId) => {
+    try {
+      const res = await apiClient.get(`/volunteers/${volunteerId}/notifications`);
+      return res.data;
+    } catch (e) {
+      return { success: true, data: [] };
     }
   },
 
@@ -219,6 +238,16 @@ export const api = {
     } catch (e) {
       const assignment = mockDataStore.dispatchUnit(sosId, volunteerId, instructions);
       return { success: true, data: assignment };
+    }
+  },
+
+  // Nodes
+  getNodes: async () => {
+    try {
+      const res = await apiClient.get('/nodes');
+      return res.data;
+    } catch (e) {
+      return { success: true, data: [] };
     }
   },
 

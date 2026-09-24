@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -71,13 +70,13 @@ func GetTileHandler(c *gin.Context) {
 
 	// Returns simulated vector tile metadata response for tile coordinate
 	c.JSON(http.StatusOK, gin.H{
-		"status":      "AVAILABLE",
-		"region":      region,
-		"z":           z,
-		"x":           x,
-		"y":           y,
-		"format":      "pbf",
-		"attribution": "OpenStreetMap / RelayMesh Vector Tile Engine",
-		"cache_header": fmt.Sprintf("max-age=86400, public"),
+		"status":       "AVAILABLE",
+		"region":       region,
+		"z":            z,
+		"x":            x,
+		"y":            y,
+		"format":       "pbf",
+		"attribution":  "OpenStreetMap / RelayMesh Vector Tile Engine",
+		"cache_header": "max-age=86400, public",
 	})
 }

@@ -147,7 +147,9 @@ func GetDashboardAlertsHandler(c *gin.Context) {
 					})
 				}
 			}
-			if len(alerts) > 0 {
+			if err := rows.Err(); err != nil {
+				// Fall through to in-memory store fallback on database read errors.
+			} else if len(alerts) > 0 {
 				c.JSON(http.StatusOK, alerts)
 				return
 			}

@@ -1,145 +1,47 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
-	"net/http"
 	"os"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
-
+	"relaymesh-backend/config"
 	"relaymesh-backend/controllers"
+	"relaymesh-backend/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
-type SOSPayload struct {
-	DeviceID   string   `json:"device_id"`
-	TriageTags []string `json:"triage_tags"`
-	Latitude   float64  `json:"latitude"`
-	Longitude  float64  `json:"longitude"`
-	Accuracy   float64  `json:"accuracy"`
-	HopCount   int      `json:"hop_count"`
-}
-
-var db *sql.DB
-
-func initDB() {
-	connStr := os.Getenv("DB_URL")
-	if connStr == "" {
-		connStr = "postgresql://postgres:RelayMesh002%40@db.zokiceiwgigauwqqhrnm.supabase.co:5432/postgres?sslmode=require"
-	}
-
-	var err error
-	db, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal("❌ Database configuration error: ", err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("❌ Cannot connect to Supabase: ", err)
-	}
-
-	fmt.Println("🚀 Connected to Supabase PostGIS Database successfully!")
-}
-
 func main() {
-	initDB()
+	// 1. Initialize environment configuration
+	config.LoadEnv()
 
-	// Initialize Module 2 PostGIS spatial hazards table
-	if err := controllers.InitHazardTable(db); err != nil {
-		log.Printf("⚠️ Warning: Failed to init hazards table: %v\n", err)
+	// 2. Initialize PostgreSQL / PostGIS database (resilient non-blocking connection)
+	db := config.InitDatabase()
+	if db != nil {
+		_ = controllers.InitHazardTable(db)
 	}
 
+	// 3. Set Gin Mode if configured
+	if os.Getenv("GIN_MODE") != "" {
+		gin.SetMode(os.Getenv("GIN_MODE"))
+	}
+
+	// 4. Create router and configure routes & CORS
 	r := gin.Default()
-	r.Use(cors.Default())
+	routes.SetupRoutes(r)
 
-	r.GET("/api/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":   "ONLINE",
-			"database": "CONNECTED",
-			"project":  "RelayMesh - Disaster Response API",
-		})
-	})
-
-	r.POST("/api/sync/sos", func(c *gin.Context) {
-		var payload SOSPayload
-		if err := c.ShouldBindJSON(&payload); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		query := `
-			INSERT INTO emergency_alerts (device_id, triage_tags, location, accuracy, hop_count)
-			VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326), $5, $6)
-		`
-		_, err := db.Exec(query, payload.DeviceID, payload.TriageTags, payload.Longitude, payload.Latitude, payload.Accuracy, payload.HopCount)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert into PostGIS: " + err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "SUCCESS",
-			"message": "Emergency SOS successfully ingested into Central PostGIS",
-		})
-	})
-
-	r.GET("/api/dashboard/alerts", func(c *gin.Context) {
-		rows, err := db.Query(`
-			SELECT id, device_id, triage_tags, ST_X(location::geometry) AS lon, ST_Y(location::geometry) AS lat, status, hop_count, created_at 
-			FROM emergency_alerts 
-			ORDER BY created_at DESC
-		`)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		defer rows.Close()
-
-		var alerts []gin.H
-		for rows.Next() {
-			var id, deviceID, status, createdAt string
-			var lon, lat float64
-			var hopCount int
-			var tags []string
-
-			if err := rows.Scan(&id, &deviceID, &tags, &lon, &lat, &status, &hopCount, &createdAt); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan alert row: " + err.Error()})
-				return
-			}
-			alerts = append(alerts, gin.H{
-				"id":          id,
-				"device_id":   deviceID,
-				"triage_tags": tags,
-				"latitude":    lat,
-				"longitude":   lon,
-				"status":      status,
-				"hop_count":   hopCount,
-				"created_at":  createdAt,
-			})
-		}
-		if err := rows.Err(); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to iterate alert rows: " + err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, alerts)
-	})
-
-	// Module 2: Spatial Vector Mapping & Hazard Reporting Endpoints
-	r.POST("/api/hazards", controllers.CreateHazardHandler(db))
-	r.GET("/api/hazards", controllers.GetHazardsHandler(db))
-	r.POST("/api/hazards/:id/resolve", controllers.ResolveHazardHandler(db))
-	r.GET("/api/tiles/bundles", controllers.GetTileBundlesHandler)
-	r.GET("/api/tiles/:region/:z/:x/:y", controllers.GetTileHandler)
-
+	// 5. Determine listening port
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	fmt.Printf("📡 Server listening on port %s\n", port)
-	r.Run(":" + port)
+	fmt.Println("=======================================================")
+	fmt.Println("🛰️  RelayMesh — Central Command & PostGIS Disaster API")
+	fmt.Printf("📡  Server active and listening on http://localhost:%s\n", port)
+	fmt.Println("=======================================================")
+
+	if err := r.Run(":" + port); err != nil {
+		fmt.Printf("❌ Failed to start server: %v\n", err)
+	}
 }
